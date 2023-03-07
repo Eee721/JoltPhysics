@@ -17,7 +17,7 @@ option(CROSS_COMPILE_ARM "Cross compile to aarch64-linux-gnu" OFF)
 # When turning this option on, the library will be compiled with interprocedural optimizations enabled, also known as link-time optimizations or link-time code generation.
 # Note that if you turn this on you need to use SET_INTERPROCEDURAL_OPTIMIZATION() or set(CMAKE_INTERPROCEDURAL_OPTIMIZATION ON) to enable LTO specificly for your own project as well.
 # If you don't do this you may get an error: /usr/bin/ld: libJolt.a: error adding symbols: file format not recognized
-option(INTERPROCEDURAL_OPTIMIZATION "Enable interprocedural optimizations" ON)
+option(INTERPROCEDURAL_OPTIMIZATION "Enable interprocedural optimizations" OFF)
 
 # When turning this on, in Debug and Release mode, the library will emit extra code to ensure that the 4th component of a 3-vector is kept the same as the 3rd component 
 # and will enable floating point exceptions during simulation to detect divisions by zero. 
@@ -145,6 +145,7 @@ elseif ("${CMAKE_SYSTEM_NAME}" STREQUAL "Linux" OR "${CMAKE_SYSTEM_NAME}" STREQU
 	set(CMAKE_EXE_LINKER_FLAGS "${CMAKE_EXE_LINKER_FLAGS} -pthread")
 endif()
 
+
 # Set linker flags
 set(CMAKE_EXE_LINKER_FLAGS_DISTRIBUTION "${CMAKE_EXE_LINKER_FLAGS_RELEASE}")
 
@@ -184,20 +185,22 @@ set(CMAKE_EXE_LINKER_FLAGS_DISTRIBUTION "${CMAKE_EXE_LINKER_FLAGS_RELEASE}")
 
 # Make Jolt Library
 include(${PHYSICS_REPO_ROOT}/Jolt/Jolt.cmake)
+include(${PHYSICS_REPO_ROOT}/joltc/joltc.cmake)
+
 if (IOS)
 	# Ensure that we enable SSE4.2 for the x86_64 build, CMAKE_SYSTEM_PROCESSOR is not set for iOS
 	set_property(TARGET Jolt PROPERTY XCODE_ATTRIBUTE_OTHER_CPLUSPLUSFLAGS[arch=x86_64] "$(inherited) -msse4.2 -mpopcnt") 
 endif()
 
 # Check if we're the root CMakeLists.txt, if not we are included by another CMake file and we should disable everything except for the main library 
-if (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
+if (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR AND (NOT IOS) AND (NOT ANDROID))
 	# Ability to turn ON/OFF individual applications
 	option(TARGET_UNIT_TESTS "Build Unit Tests" ON)
 	option(TARGET_HELLO_WORLD "Build Hello World" ON)
 	option(TARGET_PERFORMANCE_TEST "Build Performance Test" ON)
 	option(TARGET_SAMPLES "Build Samples" ON)
 	option(TARGET_VIEWER "Build JoltViewer" ON)
-	option(TARGET_JOLTC "Build JoltC dynamic lib" ON)
+	# option(TARGET_JOLTC "Build JoltC dynamic lib" ON)
 
 	if (TARGET_UNIT_TESTS)
 		# Create UnitTests executable
@@ -224,9 +227,9 @@ if (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
 		add_test(UnitTests UnitTests)
 	endif()
 
-	if (TARGET_JOLTC)
-		include(${PHYSICS_REPO_ROOT}/joltc/joltc.cmake)
-	endif()
+	# if (TARGET_JOLTC)
+	# 	include(${PHYSICS_REPO_ROOT}/joltc/joltc.cmake)
+	# endif()
 
 	if (NOT "${CMAKE_SYSTEM_NAME}" STREQUAL "WindowsStore")
 		if (TARGET_HELLO_WORLD)
