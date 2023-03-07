@@ -171,6 +171,17 @@ SET_INTERPROCEDURAL_OPTIMIZATION()
 # Set repository root
 set(PHYSICS_REPO_ROOT ${CMAKE_CURRENT_SOURCE_DIR}/../)
 
+# Options
+if (IOS OR EMSCRIPTEN)
+     set(BUILD_SHARED_LIBS OFF CACHE BOOL "Always Disable shared library on (IOS, WEB)" FORCE)
+else()
+    option(BUILD_SHARED_LIBS "Build shared library" ON)
+endif()
+
+# Set linker flags
+set(CMAKE_SHARED_LINKER_FLAGS_DISTRIBUTION "${CMAKE_SHARED_LINKER_FLAGS_RELEASE}")
+set(CMAKE_EXE_LINKER_FLAGS_DISTRIBUTION "${CMAKE_EXE_LINKER_FLAGS_RELEASE}")
+
 # Make Jolt Library
 include(${PHYSICS_REPO_ROOT}/Jolt/Jolt.cmake)
 if (IOS)
@@ -186,6 +197,7 @@ if (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
 	option(TARGET_PERFORMANCE_TEST "Build Performance Test" ON)
 	option(TARGET_SAMPLES "Build Samples" ON)
 	option(TARGET_VIEWER "Build JoltViewer" ON)
+	option(TARGET_JOLTC "Build JoltC dynamic lib" ON)
 
 	if (TARGET_UNIT_TESTS)
 		# Create UnitTests executable
@@ -210,6 +222,10 @@ if (CMAKE_CURRENT_SOURCE_DIR STREQUAL CMAKE_SOURCE_DIR)
 		# ctest --output-on-failure
 		enable_testing()
 		add_test(UnitTests UnitTests)
+	endif()
+
+	if (TARGET_JOLTC)
+		include(${PHYSICS_REPO_ROOT}/joltc/joltc.cmake)
 	endif()
 
 	if (NOT "${CMAKE_SYSTEM_NAME}" STREQUAL "WindowsStore")
