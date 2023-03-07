@@ -11,10 +11,12 @@ set(PHYSICS_REPO_ROOT "${CMAKE_CURRENT_SOURCE_DIR}/../../../../../../")
 
 # Make targets
 include(${PHYSICS_REPO_ROOT}/Jolt/Jolt.cmake)
+include(${PHYSICS_REPO_ROOT}/joltc/joltc.cmake)
 include(${PHYSICS_REPO_ROOT}/UnitTests/UnitTests.cmake)
 
 # Link shared native library
 set(CMAKE_SHARED_LINKER_FLAGS "${CMAKE_SHARED_LINKER_FLAGS} -u ANativeActivity_onCreate")
+#add_library(joltc SHARED ${SOURCE_FILES})
 add_library(UnitTests SHARED ${UNIT_TESTS_SRC_FILES} ${APP_GLUE_DIR}/android_native_app_glue.c)
 target_include_directories(UnitTests PUBLIC Jolt ${JOLT_PHYSICS_ROOT} ${UNIT_TESTS_ROOT})
 target_link_libraries(UnitTests Jolt android log)
