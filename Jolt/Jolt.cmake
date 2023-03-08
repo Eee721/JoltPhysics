@@ -410,6 +410,11 @@ set(JOLT_PHYSICS_SRC_FILES
 	${JOLT_PHYSICS_ROOT}/TriangleSplitter/TriangleSplitterMean.h
 	${JOLT_PHYSICS_ROOT}/TriangleSplitter/TriangleSplitterMorton.cpp
 	${JOLT_PHYSICS_ROOT}/TriangleSplitter/TriangleSplitterMorton.h
+	# muf extra
+	${JOLT_PHYSICS_ROOT}/extra/CharacterController.cpp
+	${JOLT_PHYSICS_ROOT}/extra/CharacterController.h
+	${JOLT_PHYSICS_ROOT}/extra/JoltWorld.cpp
+	${JOLT_PHYSICS_ROOT}/extra/JoltWorld.h
 )
 
 if ("${CMAKE_SYSTEM_NAME}" STREQUAL "Windows")

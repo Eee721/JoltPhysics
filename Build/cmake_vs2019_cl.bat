@@ -4,4 +4,4 @@ echo Open VS2019_CL\JoltPhysics.sln to build the project.
 
 rem cmake --build VS2019_CL --config Distribution
 
-cmake --build .\VS2019_CL --config Distribution
+rem cmake --build .\VS2019_CL --config Distribution

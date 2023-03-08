@@ -1,4 +1,4 @@
-// Jolt Physics Library (https://github.com/jrouwe/JoltPhysics)
+﻿// Jolt Physics Library (https://github.com/jrouwe/JoltPhysics)
 // SPDX-FileCopyrightText: 2021 Jorrit Rouwe
 // SPDX-License-Identifier: MIT
 
@@ -34,7 +34,7 @@ public:
 	static constexpr int			TriangleHeaderSize = sizeof(TriangleHeader);
 
 	/// If this codec could return a different offset than the current buffer size when calling Pack()
-	static constexpr bool			ChangesOffsetOnPack = false; 
+	static constexpr bool			ChangesOffsetOnPack = false;
 
 	/// Amount of bits per component
 	enum EComponentData : uint32
@@ -67,7 +67,7 @@ public:
 	};
 
 	static_assert(sizeof(VertexData) == 8, "Compiler added padding");
-	
+
 	/// A block of 4 triangles
 	struct TriangleBlock
 	{
@@ -80,8 +80,8 @@ public:
 	/// A triangle header, will be followed by one or more TriangleBlocks
 	struct TriangleBlockHeader
 	{
-		const VertexData *			GetVertexData() const		{ return reinterpret_cast<const VertexData *>(reinterpret_cast<const uint8 *>(this) + mOffsetToVertices); }
-		const TriangleBlock *		GetTriangleBlock() const	{ return reinterpret_cast<const TriangleBlock *>(reinterpret_cast<const uint8 *>(this) + sizeof(TriangleBlockHeader)); }
+		const VertexData* GetVertexData() const { return reinterpret_cast<const VertexData*>(reinterpret_cast<const uint8*>(this) + mOffsetToVertices); }
+		const TriangleBlock* GetTriangleBlock() const { return reinterpret_cast<const TriangleBlock*>(reinterpret_cast<const uint8*>(this) + sizeof(TriangleBlockHeader)); }
 
 		uint32						mOffsetToVertices;			///< Offset from current block to start of vertices in bytes
 	};
@@ -93,7 +93,7 @@ public:
 	{
 	public:
 		/// Construct the encoding context
-		explicit					EncodingContext(const VertexList &inVertices) :
+		explicit					EncodingContext(const VertexList& inVertices) :
 			mVertexMap(inVertices.size(), 0xffffffff) // Fill vertex map with 'not found'
 		{
 			// Reserve for worst case to avoid allocating in the inner loop
@@ -109,7 +109,7 @@ public:
 
 		/// Pack the triangles in inContainer to ioBuffer. This stores the mMaterialIndex of a triangle in the 8 bit flags.
 		/// Returns uint(-1) on error.
-		uint						Pack(const IndexedTriangleList &inTriangles, ByteBuffer &ioBuffer, const char *&outError)
+		uint						Pack(const IndexedTriangleList& inTriangles, ByteBuffer& ioBuffer, const char*& outError)
 		{
 			// Determine position of triangles start
 			uint offset = (uint)ioBuffer.size();
@@ -119,29 +119,29 @@ public:
 			mNumTriangles += tri_count;
 
 			// Allocate triangle block header
-			TriangleBlockHeader *header = ioBuffer.Allocate<TriangleBlockHeader>();
+			TriangleBlockHeader* header = ioBuffer.Allocate<TriangleBlockHeader>();
 
 			// Compute first vertex that this batch will use (ensuring there's enough room if none of the vertices are shared)
 			uint start_vertex = Clamp((int)mVertices.size() - 256 + (int)tri_count * 3, 0, (int)mVertices.size());
 
 			// Store the start vertex offset, this will later be patched to give the delta offset relative to the triangle block
-			mOffsetsToPatch.push_back(uint((uint8 *)&header->mOffsetToVertices - &ioBuffer[0]));
+			mOffsetsToPatch.push_back(uint((uint8*)&header->mOffsetToVertices - &ioBuffer[0]));
 			header->mOffsetToVertices = start_vertex * sizeof(VertexData);
 
 			// Pack vertices
 			uint padded_triangle_count = AlignUp(tri_count, 4);
 			for (uint t = 0; t < padded_triangle_count; t += 4)
 			{
-				TriangleBlock *block = ioBuffer.Allocate<TriangleBlock>();
+				TriangleBlock* block = ioBuffer.Allocate<TriangleBlock>();
 				for (uint vertex_nr = 0; vertex_nr < 3; ++vertex_nr)
 					for (uint block_tri_idx = 0; block_tri_idx < 4; ++block_tri_idx)
 					{
 						// Fetch vertex index. Create degenerate triangles for padding triangles.
 						bool triangle_available = t + block_tri_idx < tri_count;
-						uint32 src_vertex_index = triangle_available? inTriangles[t + block_tri_idx].mIdx[vertex_nr] : inTriangles[tri_count - 1].mIdx[0];
+						uint32 src_vertex_index = triangle_available ? inTriangles[t + block_tri_idx].mIdx[vertex_nr] : inTriangles[tri_count - 1].mIdx[0];
 
 						// Check if we've seen this vertex before and if it is in the range that we can encode
-						uint32 &vertex_index = mVertexMap[src_vertex_index];
+						uint32& vertex_index = mVertexMap[src_vertex_index];
 						if (vertex_index == 0xffffffff || vertex_index < start_vertex)
 						{
 							// Add vertex
@@ -159,7 +159,7 @@ public:
 						block->mIndices[vertex_nr][block_tri_idx] = (uint8)vertex_offset;
 
 						// Store flags
-						uint32 flags = triangle_available? inTriangles[t + block_tri_idx].mMaterialIndex : 0;
+						uint32 flags = triangle_available ? inTriangles[t + block_tri_idx].mMaterialIndex : 0;
 						if (flags > 0xff)
 						{
 							outError = "TriangleCodecIndexed8BitPackSOA4Flags: Material index doesn't fit in 8 bit";
@@ -173,7 +173,7 @@ public:
 		}
 
 		/// After all triangles have been packed, this finalizes the header and triangle buffer
-		void						Finalize(const VertexList &inVertices, TriangleHeader *ioHeader, ByteBuffer &ioBuffer) const
+		void						Finalize(const VertexList& inVertices, TriangleHeader* ioHeader, ByteBuffer& ioBuffer) const
 		{
 			// Check if anything to do
 			if (mVertices.empty())
@@ -192,7 +192,7 @@ public:
 				bounds.Encapsulate(Vec3(inVertices[v]));
 
 			// Compress vertices
-			VertexData *vertices = ioBuffer.Allocate<VertexData>(mVertices.size());
+			VertexData* vertices = ioBuffer.Allocate<VertexData>(mVertices.size());
 			Vec3 compress_scale = Vec3::sReplicate(COMPONENT_MASK) / Vec3::sMax(bounds.GetSize(), Vec3::sReplicate(1.0e-20f));
 			for (uint32 v : mVertices)
 			{
@@ -224,7 +224,7 @@ public:
 	{
 	private:
 		/// Private helper functions to unpack the 1 vertex of 4 triangles (outX contains the x coordinate of triangle 0 .. 3 etc.)
-		JPH_INLINE void				Unpack(const VertexData *inVertices, UVec4Arg inIndex, Vec4 &outX, Vec4 &outY, Vec4 &outZ) const
+		JPH_INLINE void				Unpack(const VertexData* inVertices, UVec4Arg inIndex, Vec4& outX, Vec4& outY, Vec4& outZ) const
 		{
 			// Get compressed data
 			UVec4 c1 = UVec4::sGatherInt4<8>(&inVertices->mVertexXY, inIndex);
@@ -242,7 +242,7 @@ public:
 		}
 
 	public:
-		JPH_INLINE explicit			DecodingContext(const TriangleHeader *inHeader) :
+		JPH_INLINE explicit			DecodingContext(const TriangleHeader* inHeader) :
 			mOffsetX(Vec4::sReplicate(inHeader->mOffset.x)),
 			mOffsetY(Vec4::sReplicate(inHeader->mOffset.y)),
 			mOffsetZ(Vec4::sReplicate(inHeader->mOffset.z)),
@@ -253,20 +253,20 @@ public:
 		}
 
 		/// Unpacks triangles in the format t1v1,t1v2,t1v3, t2v1,t2v2,t2v3, ...
-		JPH_INLINE void				Unpack(const void *inTriangleStart, uint32 inNumTriangles, Vec3 *outTriangles) const
+		JPH_INLINE void				Unpack(const void* inTriangleStart, uint32 inNumTriangles, Vec3* outTriangles) const
 		{
 			JPH_ASSERT(inNumTriangles > 0);
-			const TriangleBlockHeader *header = reinterpret_cast<const TriangleBlockHeader *>(inTriangleStart);
-			const VertexData *vertices = header->GetVertexData();			
-			const TriangleBlock *t = header->GetTriangleBlock();
-			const TriangleBlock *end = t + ((inNumTriangles + 3) >> 2);
-			
+			const TriangleBlockHeader* header = reinterpret_cast<const TriangleBlockHeader*>(inTriangleStart);
+			const VertexData* vertices = header->GetVertexData();
+			const TriangleBlock* t = header->GetTriangleBlock();
+			const TriangleBlock* end = t + ((inNumTriangles + 3) >> 2);
+
 			int triangles_left = inNumTriangles;
 
 			do
 			{
 				// Get the indices for the three vertices (reads 4 bytes extra, but these are the flags so that's ok)
-				UVec4 indices = UVec4::sLoadInt4(reinterpret_cast<const uint32 *>(&t->mIndices[0]));
+				UVec4 indices = UVec4::sLoadInt4(reinterpret_cast<const uint32*>(&t->mIndices[0]));
 				UVec4 iv1 = indices.Expand4Byte0();
 				UVec4 iv2 = indices.Expand4Byte4();
 				UVec4 iv3 = indices.Expand4Byte8();
@@ -291,18 +291,17 @@ public:
 				}
 
 				++t;
-			} 
-			while (t < end);
+			} while (t < end);
 		}
 
 		/// Tests a ray against the packed triangles
-		JPH_INLINE float			TestRay(Vec3Arg inRayOrigin, Vec3Arg inRayDirection, const void *inTriangleStart, uint32 inNumTriangles, float inClosest, uint32 &outClosestTriangleIndex) const
+		JPH_INLINE float			TestRay(Vec3Arg inRayOrigin, Vec3Arg inRayDirection, const void* inTriangleStart, uint32 inNumTriangles, float inClosest, uint32& outClosestTriangleIndex) const
 		{
 			JPH_ASSERT(inNumTriangles > 0);
-			const TriangleBlockHeader *header = reinterpret_cast<const TriangleBlockHeader *>(inTriangleStart);
-			const VertexData *vertices = header->GetVertexData();			
-			const TriangleBlock *t = header->GetTriangleBlock();
-			const TriangleBlock *end = t + ((inNumTriangles + 3) >> 2);
+			const TriangleBlockHeader* header = reinterpret_cast<const TriangleBlockHeader*>(inTriangleStart);
+			const VertexData* vertices = header->GetVertexData();
+			const TriangleBlock* t = header->GetTriangleBlock();
+			const TriangleBlock* end = t + ((inNumTriangles + 3) >> 2);
 
 			Vec4 closest = Vec4::sReplicate(inClosest);
 			UVec4 closest_triangle_idx = UVec4::sZero();
@@ -311,7 +310,7 @@ public:
 			do
 			{
 				// Get the indices for the three vertices (reads 4 bytes extra, but these are the flags so that's ok)
-				UVec4 indices = UVec4::sLoadInt4(reinterpret_cast<const uint32 *>(&t->mIndices[0]));
+				UVec4 indices = UVec4::sLoadInt4(reinterpret_cast<const uint32*>(&t->mIndices[0]));
 				UVec4 iv1 = indices.Expand4Byte0();
 				UVec4 iv2 = indices.Expand4Byte4();
 				UVec4 iv3 = indices.Expand4Byte8();
@@ -336,8 +335,7 @@ public:
 				// Next block
 				++t;
 				start_triangle_idx += UVec4::sReplicate(4);
-			} 
-			while (t < end);
+			} while (t < end);
 
 			// Get the smallest component
 			Vec4::sSort4(closest, closest_triangle_idx);
@@ -346,17 +344,17 @@ public:
 		}
 
 		/// Decode a single triangle
-		inline void					GetTriangle(const void *inTriangleStart, uint32 inTriangleIdx, Vec3 &outV1, Vec3 &outV2, Vec3 &outV3) const
+		inline void					GetTriangle(const void* inTriangleStart, uint32 inTriangleIdx, Vec3& outV1, Vec3& outV2, Vec3& outV3) const
 		{
-			const TriangleBlockHeader *header = reinterpret_cast<const TriangleBlockHeader *>(inTriangleStart);
-			const VertexData *vertices = header->GetVertexData();
-			const TriangleBlock *block = header->GetTriangleBlock() + (inTriangleIdx >> 2);
+			const TriangleBlockHeader* header = reinterpret_cast<const TriangleBlockHeader*>(inTriangleStart);
+			const VertexData* vertices = header->GetVertexData();
+			const TriangleBlock* block = header->GetTriangleBlock() + (inTriangleIdx >> 2);
 			uint32 block_triangle_idx = inTriangleIdx & 0b11;
 
 			// Get the 3 vertices
-			const VertexData &v1 = vertices[block->mIndices[0][block_triangle_idx]];
-			const VertexData &v2 = vertices[block->mIndices[1][block_triangle_idx]];
-			const VertexData &v3 = vertices[block->mIndices[2][block_triangle_idx]];
+			const VertexData& v1 = vertices[block->mIndices[0][block_triangle_idx]];
+			const VertexData& v2 = vertices[block->mIndices[1][block_triangle_idx]];
+			const VertexData& v3 = vertices[block->mIndices[2][block_triangle_idx]];
 
 			// Pack the vertices
 			UVec4 c1(v1.mVertexXY, v2.mVertexXY, v3.mVertexXY, 0);
@@ -380,13 +378,13 @@ public:
 		}
 
 		/// Get flags for entire triangle block
-		JPH_INLINE static void		sGetFlags(const void *inTriangleStart, uint32 inNumTriangles, uint8 *outTriangleFlags) 
+		JPH_INLINE static void		sGetFlags(const void* inTriangleStart, uint32 inNumTriangles, uint8* outTriangleFlags)
 		{
 			JPH_ASSERT(inNumTriangles > 0);
-			const TriangleBlockHeader *header = reinterpret_cast<const TriangleBlockHeader *>(inTriangleStart);
-			const TriangleBlock *t = header->GetTriangleBlock();
-			const TriangleBlock *end = t + ((inNumTriangles + 3) >> 2);
-			
+			const TriangleBlockHeader* header = reinterpret_cast<const TriangleBlockHeader*>(inTriangleStart);
+			const TriangleBlock* t = header->GetTriangleBlock();
+			const TriangleBlock* end = t + ((inNumTriangles + 3) >> 2);
+
 			int triangles_left = inNumTriangles;
 			do
 			{
@@ -394,20 +392,19 @@ public:
 					*outTriangleFlags++ = t->mFlags[i];
 
 				++t;
-			} 
-			while (t < end);
+			} while (t < end);
 		}
 
 		/// Get flags for a particular triangle
-		JPH_INLINE static uint8		sGetFlags(const void *inTriangleStart, int inTriangleIndex)
+		JPH_INLINE static uint8		sGetFlags(const void* inTriangleStart, int inTriangleIndex)
 		{
-			const TriangleBlockHeader *header = reinterpret_cast<const TriangleBlockHeader *>(inTriangleStart);
-			const TriangleBlock *first_block = header->GetTriangleBlock();
+			const TriangleBlockHeader* header = reinterpret_cast<const TriangleBlockHeader*>(inTriangleStart);
+			const TriangleBlock* first_block = header->GetTriangleBlock();
 			return first_block[inTriangleIndex >> 2].mFlags[inTriangleIndex & 0b11];
 		}
 
 		/// Unpacks triangles and flags, convencience function
-		JPH_INLINE void				Unpack(const void *inTriangleStart, uint32 inNumTriangles, Vec3 *outTriangles, uint8 *outTriangleFlags) const
+		JPH_INLINE void				Unpack(const void* inTriangleStart, uint32 inNumTriangles, Vec3* outTriangles, uint8* outTriangleFlags) const
 		{
 			Unpack(inTriangleStart, inNumTriangles, outTriangles);
 			sGetFlags(inTriangleStart, inNumTriangles, outTriangleFlags);

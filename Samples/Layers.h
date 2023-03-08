@@ -1,4 +1,4 @@
-// Jolt Physics Library (https://github.com/jrouwe/JoltPhysics)
+﻿// Jolt Physics Library (https://github.com/jrouwe/JoltPhysics)
 // SPDX-FileCopyrightText: 2021 Jorrit Rouwe
 // SPDX-License-Identifier: MIT
 
@@ -64,7 +64,7 @@ namespace BroadPhaseLayers
 class BPLayerInterfaceImpl final : public BroadPhaseLayerInterface
 {
 public:
-									BPLayerInterfaceImpl()
+	BPLayerInterfaceImpl()
 	{
 		// Create a mapping table from object to broad phase layer
 		mObjectToBroadPhase[Layers::UNUSED1] = BroadPhaseLayers::UNUSED;
@@ -89,7 +89,7 @@ public:
 	}
 
 #if defined(JPH_EXTERNAL_PROFILE) || defined(JPH_PROFILE_ENABLED)
-	virtual const char *			GetBroadPhaseLayerName(BroadPhaseLayer inLayer) const override
+	virtual const char* GetBroadPhaseLayerName(BroadPhaseLayer inLayer) const override
 	{
 		switch ((BroadPhaseLayer::Type)inLayer)
 		{
@@ -126,7 +126,7 @@ public:
 		case Layers::UNUSED1:
 		case Layers::UNUSED2:
 		case Layers::UNUSED3:
-			return false;			
+			return false;
 		default:
 			JPH_ASSERT(false);
 			return false;

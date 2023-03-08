@@ -1,4 +1,4 @@
-// Jolt Physics Library (https://github.com/jrouwe/JoltPhysics)
+﻿// Jolt Physics Library (https://github.com/jrouwe/JoltPhysics)
 // SPDX-FileCopyrightText: 2021 Jorrit Rouwe
 // SPDX-License-Identifier: MIT
 
@@ -51,14 +51,14 @@ JPH_SUPPRESS_WARNINGS_STD_END
 
 struct TestNameAndRTTI
 {
-	const char *		mName;
-	const RTTI *		mRTTI;
+	const char* mName;
+	const RTTI* mRTTI;
 };
 
 struct TestCategory
 {
-	const char *		mName;
-	TestNameAndRTTI *	mTests;
+	const char* mName;
+	TestNameAndRTTI* mTests;
 	size_t				mNumTests;
 };
 
@@ -251,12 +251,14 @@ static TestNameAndRTTI sRigTests[] =
 
 JPH_DECLARE_RTTI_FOR_FACTORY(CharacterTest)
 JPH_DECLARE_RTTI_FOR_FACTORY(CharacterVirtualTest)
+JPH_DECLARE_RTTI_FOR_FACTORY(CharacterControllerTest)
 JPH_DECLARE_RTTI_FOR_FACTORY(CharacterSpaceShipTest)
 
 static TestNameAndRTTI sCharacterTests[] =
 {
 	{ "Character",							JPH_RTTI(CharacterTest) },
 	{ "Character Virtual",					JPH_RTTI(CharacterVirtualTest) },
+	{ "Character Controller",					JPH_RTTI(CharacterControllerTest) },
 	{ "Character Virtual vs Space Ship",	JPH_RTTI(CharacterSpaceShipTest) },
 };
 
@@ -313,8 +315,8 @@ static TestNameAndRTTI sTools[] =
 	{ "Load Snapshot",						JPH_RTTI(LoadSnapshotTest) },
 };
 
-static TestCategory sAllCategories[] = 
-{ 
+static TestCategory sAllCategories[] =
+{
 	{ "General", sGeneralTests, size(sGeneralTests) },
 	{ "Shapes", sShapeTests, size(sShapeTests) },
 	{ "Scaled Shapes", sScaledShapeTests, size(sScaledShapeTests) },
@@ -325,7 +327,7 @@ static TestCategory sAllCategories[] =
 	{ "Vehicle", sVehicleTests, size(sVehicleTests) },
 	{ "Broad Phase", sBroadPhaseTests, size(sBroadPhaseTests) },
 	{ "Convex Collision", sConvexCollisionTests, size(sConvexCollisionTests) },
-	{ "Tools", sTools, size(sTools) } 
+	{ "Tools", sTools, size(sTools) }
 };
 
 //-----------------------------------------------------------------------------
@@ -356,33 +358,33 @@ SamplesApp::SamplesApp()
 		DisableCustomMemoryHook dcmh;
 
 		// Create UI
-		UIElement *main_menu = mDebugUI->CreateMenu();
-		mDebugUI->CreateTextButton(main_menu, "Select Test", [this]() { 
-			UIElement *tests = mDebugUI->CreateMenu();
-			for (TestCategory &c : sAllCategories)
+		UIElement* main_menu = mDebugUI->CreateMenu();
+		mDebugUI->CreateTextButton(main_menu, "Select Test", [this]() {
+			UIElement* tests = mDebugUI->CreateMenu();
+			for (TestCategory& c : sAllCategories)
 			{
-				mDebugUI->CreateTextButton(tests, c.mName, [=]() { 
-					UIElement *category = mDebugUI->CreateMenu();
+				mDebugUI->CreateTextButton(tests, c.mName, [=]() {
+					UIElement* category = mDebugUI->CreateMenu();
 					for (uint j = 0; j < c.mNumTests; ++j)
 						mDebugUI->CreateTextButton(category, c.mTests[j].mName, [=]() { StartTest(c.mTests[j].mRTTI); });
 					mDebugUI->ShowMenu(category);
-				});
+					});
 			}
 			mDebugUI->ShowMenu(tests);
-		});
-		mTestSettingsButton = mDebugUI->CreateTextButton(main_menu, "Test Settings", [this](){
-			UIElement *test_settings = mDebugUI->CreateMenu();
+			});
+		mTestSettingsButton = mDebugUI->CreateTextButton(main_menu, "Test Settings", [this]() {
+			UIElement* test_settings = mDebugUI->CreateMenu();
 			mTest->CreateSettingsMenu(mDebugUI, test_settings);
 			mDebugUI->ShowMenu(test_settings);
-		});
+			});
 		mDebugUI->CreateTextButton(main_menu, "Restart Test (R)", [this]() { StartTest(mTestClass); });
 		mDebugUI->CreateTextButton(main_menu, "Run All Tests", [this]() { RunAllTests(); });
 		mNextTestButton = mDebugUI->CreateTextButton(main_menu, "Next Test (N)", [this]() { NextTest(); });
 		mNextTestButton->SetDisabled(true);
 		mDebugUI->CreateTextButton(main_menu, "Take Snapshot", [this]() { TakeSnapshot(); });
 		mDebugUI->CreateTextButton(main_menu, "Take And Reload Snapshot", [this]() { TakeAndReloadSnapshot(); });
-		mDebugUI->CreateTextButton(main_menu, "Physics Settings", [this]() { 
-			UIElement *phys_settings = mDebugUI->CreateMenu();
+		mDebugUI->CreateTextButton(main_menu, "Physics Settings", [this]() {
+			UIElement* phys_settings = mDebugUI->CreateMenu();
 			mDebugUI->CreateSlider(phys_settings, "Max Concurrent Jobs", float(mMaxConcurrentJobs), 1, float(thread::hardware_concurrency()), 1, [this](float inValue) { mMaxConcurrentJobs = (int)inValue; });
 			mDebugUI->CreateSlider(phys_settings, "Gravity (m/s^2)", -mPhysicsSystem->GetGravity().GetY(), 0.0f, 20.0f, 1.0f, [this](float inValue) { mPhysicsSystem->SetGravity(Vec3(0, -inValue, 0)); });
 			mDebugUI->CreateSlider(phys_settings, "Update Frequency (Hz)", mUpdateFrequency, 7.5f, 300.0f, 2.5f, [this](float inValue) { mUpdateFrequency = inValue; });
@@ -396,9 +398,9 @@ SamplesApp::SamplesApp()
 			mDebugUI->CreateSlider(phys_settings, "Min Velocity For Restitution (m/s)", mPhysicsSettings.mMinVelocityForRestitution, 0.0f, 10.0f, 0.1f, [this](float inValue) { mPhysicsSettings.mMinVelocityForRestitution = inValue; mPhysicsSystem->SetPhysicsSettings(mPhysicsSettings); });
 			mDebugUI->CreateSlider(phys_settings, "Time Before Sleep (s)", mPhysicsSettings.mTimeBeforeSleep, 0.1f, 1.0f, 0.1f, [this](float inValue) { mPhysicsSettings.mTimeBeforeSleep = inValue; mPhysicsSystem->SetPhysicsSettings(mPhysicsSettings); });
 			mDebugUI->CreateSlider(phys_settings, "Point Velocity Sleep Threshold (m/s)", mPhysicsSettings.mPointVelocitySleepThreshold, 0.01f, 1.0f, 0.01f, [this](float inValue) { mPhysicsSettings.mPointVelocitySleepThreshold = inValue; mPhysicsSystem->SetPhysicsSettings(mPhysicsSettings); });
-		#if defined(_DEBUG) && !defined(JPH_DISABLE_CUSTOM_ALLOCATOR) && !defined(JPH_COMPILER_MINGW)
+#if defined(_DEBUG) && !defined(JPH_DISABLE_CUSTOM_ALLOCATOR) && !defined(JPH_COMPILER_MINGW)
 			mDebugUI->CreateCheckBox(phys_settings, "Enable Checking Memory Hook", IsCustomMemoryHookEnabled(), [](UICheckBox::EState inState) { EnableCustomMemoryHook(inState == UICheckBox::STATE_CHECKED); });
-		#endif
+#endif
 			mDebugUI->CreateCheckBox(phys_settings, "Constraint Warm Starting", mPhysicsSettings.mConstraintWarmStart, [this](UICheckBox::EState inState) { mPhysicsSettings.mConstraintWarmStart = inState == UICheckBox::STATE_CHECKED; mPhysicsSystem->SetPhysicsSettings(mPhysicsSettings); });
 			mDebugUI->CreateCheckBox(phys_settings, "Use Body Pair Contact Cache", mPhysicsSettings.mUseBodyPairContactCache, [this](UICheckBox::EState inState) { mPhysicsSettings.mUseBodyPairContactCache = inState == UICheckBox::STATE_CHECKED; mPhysicsSystem->SetPhysicsSettings(mPhysicsSettings); });
 			mDebugUI->CreateCheckBox(phys_settings, "Contact Manifold Reduction", mPhysicsSettings.mUseManifoldReduction, [this](UICheckBox::EState inState) { mPhysicsSettings.mUseManifoldReduction = inState == UICheckBox::STATE_CHECKED; mPhysicsSystem->SetPhysicsSettings(mPhysicsSettings); });
@@ -408,10 +410,10 @@ SamplesApp::SamplesApp()
 			mDebugUI->CreateCheckBox(phys_settings, "Check Determinism", mCheckDeterminism, [this](UICheckBox::EState inState) { mCheckDeterminism = inState == UICheckBox::STATE_CHECKED; });
 			mDebugUI->CreateCheckBox(phys_settings, "Install Contact Listener", mInstallContactListener, [this](UICheckBox::EState inState) { mInstallContactListener = inState == UICheckBox::STATE_CHECKED; StartTest(mTestClass); });
 			mDebugUI->ShowMenu(phys_settings);
-		});
-	#ifdef JPH_DEBUG_RENDERER
-		mDebugUI->CreateTextButton(main_menu, "Drawing Options", [this]() { 
-			UIElement *drawing_options = mDebugUI->CreateMenu();
+			});
+#ifdef JPH_DEBUG_RENDERER
+		mDebugUI->CreateTextButton(main_menu, "Drawing Options", [this]() {
+			UIElement* drawing_options = mDebugUI->CreateMenu();
 			mDebugUI->CreateCheckBox(drawing_options, "Draw Shapes (H)", mBodyDrawSettings.mDrawShape, [this](UICheckBox::EState inState) { mBodyDrawSettings.mDrawShape = inState == UICheckBox::STATE_CHECKED; });
 			mDebugUI->CreateCheckBox(drawing_options, "Draw Shapes Wireframe (Alt+W)", mBodyDrawSettings.mDrawShapeWireframe, [this](UICheckBox::EState inState) { mBodyDrawSettings.mDrawShapeWireframe = inState == UICheckBox::STATE_CHECKED; });
 			mDebugUI->CreateComboBox(drawing_options, "Draw Shape Color", { "Instance", "Shape Type", "Motion Type", "Sleep", "Island", "Material" }, (int)mBodyDrawSettings.mDrawShapeColor, [this](int inItem) { mBodyDrawSettings.mDrawShapeColor = (BodyManager::EShapeColor)inItem; });
@@ -445,10 +447,10 @@ SamplesApp::SamplesApp()
 			mDebugUI->CreateCheckBox(drawing_options, "Draw Character Virtual Walk Stairs", CharacterVirtual::sDrawWalkStairs, [](UICheckBox::EState inState) { CharacterVirtual::sDrawWalkStairs = inState == UICheckBox::STATE_CHECKED; });
 			mDebugUI->CreateCheckBox(drawing_options, "Draw Character Virtual Stick To Floor", CharacterVirtual::sDrawStickToFloor, [](UICheckBox::EState inState) { CharacterVirtual::sDrawStickToFloor = inState == UICheckBox::STATE_CHECKED; });
 			mDebugUI->ShowMenu(drawing_options);
-		});
-	#endif // JPH_DEBUG_RENDERER
-		mDebugUI->CreateTextButton(main_menu, "Mouse Probe", [this]() { 
-			UIElement *probe_options = mDebugUI->CreateMenu();
+			});
+#endif // JPH_DEBUG_RENDERER
+		mDebugUI->CreateTextButton(main_menu, "Mouse Probe", [this]() {
+			UIElement* probe_options = mDebugUI->CreateMenu();
 			mDebugUI->CreateComboBox(probe_options, "Mode", { "Pick", "Ray", "RayCollector", "CollidePoint", "CollideShape", "CastShape", "TransfShape", "GetTriangles", "BP Ray", "BP Box", "BP Sphere", "BP Point", "BP OBox", "BP Cast Box" }, (int)mProbeMode, [this](int inItem) { mProbeMode = (EProbeMode)inItem; });
 			mDebugUI->CreateComboBox(probe_options, "Shape", { "Sphere", "Box", "ConvexHull", "Capsule", "TaperedCapsule", "Cylinder", "Triangle", "StaticCompound", "StaticCompound2", "MutableCompound", "Mesh" }, (int)mProbeShape, [=](int inItem) { mProbeShape = (EProbeShape)inItem; });
 			mDebugUI->CreateCheckBox(probe_options, "Scale Shape", mScaleShape, [this](UICheckBox::EState inState) { mScaleShape = inState == UICheckBox::STATE_CHECKED; });
@@ -465,9 +467,9 @@ SamplesApp::SamplesApp()
 			mDebugUI->CreateCheckBox(probe_options, "Draw Supporting Face", mDrawSupportingFace, [this](UICheckBox::EState inState) { mDrawSupportingFace = inState == UICheckBox::STATE_CHECKED; });
 			mDebugUI->CreateSlider(probe_options, "Max Hits", float(mMaxHits), 0, 10, 1, [this](float inValue) { mMaxHits = (int)inValue; });
 			mDebugUI->ShowMenu(probe_options);
-		});
-		mDebugUI->CreateTextButton(main_menu, "Shoot Object", [this]() { 
-			UIElement *shoot_options = mDebugUI->CreateMenu();
+			});
+		mDebugUI->CreateTextButton(main_menu, "Shoot Object", [this]() {
+			UIElement* shoot_options = mDebugUI->CreateMenu();
 			mDebugUI->CreateTextButton(shoot_options, "Shoot Object (B)", [=]() { ShootObject(); });
 			mDebugUI->CreateSlider(shoot_options, "Initial Velocity", mShootObjectVelocity, 0.0f, 500.0f, 10.0f, [this](float inValue) { mShootObjectVelocity = inValue; });
 			mDebugUI->CreateComboBox(shoot_options, "Shape", { "Sphere", "ConvexHull", "Thin Bar" }, (int)mShootObjectShape, [=](int inItem) { mShootObjectShape = (EShootObjectShape)inItem; });
@@ -479,9 +481,9 @@ SamplesApp::SamplesApp()
 			mDebugUI->CreateSlider(shoot_options, "Scale Y", mShootObjectShapeScale.GetY(), -5.0f, 5.0f, 0.1f, [this](float inValue) { mShootObjectShapeScale.SetY(inValue); });
 			mDebugUI->CreateSlider(shoot_options, "Scale Z", mShootObjectShapeScale.GetZ(), -5.0f, 5.0f, 0.1f, [this](float inValue) { mShootObjectShapeScale.SetZ(inValue); });
 			mDebugUI->ShowMenu(shoot_options);
-		});
-		mDebugUI->CreateTextButton(main_menu, "Help", [this](){
-			UIElement *help = mDebugUI->CreateMenu();
+			});
+		mDebugUI->CreateTextButton(main_menu, "Help", [this]() {
+			UIElement* help = mDebugUI->CreateMenu();
 			mDebugUI->CreateStaticText(help,
 				"ESC: Back to previous menu.\n"
 				"WASD + Mouse: Fly around. Hold Shift to speed up, Ctrl to slow down.\n"
@@ -495,7 +497,7 @@ SamplesApp::SamplesApp()
 				"T: Dump frame timing information to profile_*.html (when JPH_PROFILE_ENABLED defined)."
 			);
 			mDebugUI->ShowMenu(help);
-		});
+			});
 		mDebugUI->ShowMenu(main_menu);
 	}
 
@@ -516,18 +518,18 @@ SamplesApp::SamplesApp()
 		else
 		{
 			// Search for the test
-			const RTTI *test = JPH_RTTI(LoadRigTest);
-			for (TestCategory &c : sAllCategories)
+			const RTTI* test = JPH_RTTI(LoadRigTest);
+			for (TestCategory& c : sAllCategories)
 				for (uint i = 0; i < c.mNumTests; ++i)
 				{
-					TestNameAndRTTI &t = c.mTests[i];
+					TestNameAndRTTI& t = c.mTests[i];
 					String test_name = ToLower(t.mRTTI->GetName());
 					if (test_name == cmd)
 					{
 						test = t.mRTTI;
 						break;
 					}
-				}		
+				}
 
 			// Construct test
 			StartTest(test);
@@ -551,13 +553,13 @@ SamplesApp::~SamplesApp()
 	delete mTempAllocator;
 }
 
-void SamplesApp::StartTest(const RTTI *inRTTI)
+void SamplesApp::StartTest(const RTTI* inRTTI)
 {
 	// Pop active menus, we might be in the settings menu for the test which will be dangling after restarting the test
 	mDebugUI->BackToMain();
 
 	// Store old gravity
-	Vec3 old_gravity = mPhysicsSystem != nullptr? mPhysicsSystem->GetGravity() : Vec3(0, -9.81f, 0);
+	Vec3 old_gravity = mPhysicsSystem != nullptr ? mPhysicsSystem->GetGravity() : Vec3(0, -9.81f, 0);
 
 	// Discard old test
 	delete mTest;
@@ -583,7 +585,7 @@ void SamplesApp::StartTest(const RTTI *inRTTI)
 
 	// Set new test
 	mTestClass = inRTTI;
-	mTest = static_cast<Test *>(inRTTI->CreateObject());
+	mTest = static_cast<Test*>(inRTTI->CreateObject());
 	mTest->SetPhysicsSystem(mPhysicsSystem);
 	mTest->SetJobSystem(mJobSystem);
 	mTest->SetDebugRenderer(mDebugRenderer);
@@ -600,7 +602,7 @@ void SamplesApp::StartTest(const RTTI *inRTTI)
 		mPhysicsSystem->SetContactListener(mTest->GetContactListener());
 	}
 	mTest->Initialize();
-				
+
 	// Optimize the broadphase to make the first update fast
 	mPhysicsSystem->OptimizeBroadPhase();
 
@@ -622,10 +624,10 @@ void SamplesApp::RunAllTests()
 {
 	mTestsToRun.clear();
 
-	for (const TestCategory &c : sAllCategories)
+	for (const TestCategory& c : sAllCategories)
 		for (uint i = 0; i < c.mNumTests; ++i)
 		{
-			TestNameAndRTTI &t = c.mTests[i];
+			TestNameAndRTTI& t = c.mTests[i];
 			mTestsToRun.push_back(t.mRTTI);
 		}
 
@@ -647,7 +649,7 @@ bool SamplesApp::NextTest()
 		mTestTimeLeft = 10.0f;
 
 		// Take next test
-		const RTTI *rtti = mTestsToRun.front();
+		const RTTI* rtti = mTestsToRun.front();
 		mTestsToRun.erase(mTestsToRun.begin());
 
 		// Start it
@@ -705,7 +707,7 @@ void SamplesApp::TakeAndReloadSnapshot()
 RefConst<Shape> SamplesApp::CreateProbeShape()
 {
 	// Get the scale
-	Vec3 scale = mScaleShape? mShapeScale : Vec3::sReplicate(1.0f);
+	Vec3 scale = mScaleShape ? mShapeScale : Vec3::sReplicate(1.0f);
 
 	// Make it minimally -0.1 or 0.1 depending on the sign
 	Vec3 clamped_value = Vec3::sSelect(Vec3::sReplicate(-0.1f), Vec3::sReplicate(0.1f), Vec3::sGreaterOrEqual(scale, Vec3::sZero()));
@@ -724,16 +726,16 @@ RefConst<Shape> SamplesApp::CreateProbeShape()
 		break;
 
 	case EProbeShape::ConvexHull:
-		{
-			// Create tetrahedron
-			Array<Vec3> tetrahedron;
-			tetrahedron.push_back(Vec3::sZero());
-			tetrahedron.push_back(Vec3(0.2f, 0, 0.4f));
-			tetrahedron.push_back(Vec3(0.4f, 0, 0));
-			tetrahedron.push_back(Vec3(0.2f, -0.2f, 1.0f));
-			shape = ConvexHullShapeSettings(tetrahedron, 0.01f).Create().Get();
-		}
-		break;
+	{
+		// Create tetrahedron
+		Array<Vec3> tetrahedron;
+		tetrahedron.push_back(Vec3::sZero());
+		tetrahedron.push_back(Vec3(0.2f, 0, 0.4f));
+		tetrahedron.push_back(Vec3(0.4f, 0, 0));
+		tetrahedron.push_back(Vec3(0.2f, -0.2f, 1.0f));
+		shape = ConvexHullShapeSettings(tetrahedron, 0.01f).Create().Get();
+	}
+	break;
 
 	case EProbeShape::Capsule:
 		scale = scale.Swizzle<SWIZZLE_X, SWIZZLE_X, SWIZZLE_X>(); // Only uniform scale supported
@@ -756,48 +758,48 @@ RefConst<Shape> SamplesApp::CreateProbeShape()
 		break;
 
 	case EProbeShape::StaticCompound:
-		{
-			Array<Vec3> tetrahedron;
-			tetrahedron.push_back(Vec3::sZero());
-			tetrahedron.push_back(Vec3(-0.2f, 0, 0.4f));
-			tetrahedron.push_back(Vec3(0, 0.2f, 0));
-			tetrahedron.push_back(Vec3(0.2f, 0, 0.4f));
-			RefConst<Shape> convex = ConvexHullShapeSettings(tetrahedron, 0.01f).Create().Get();
-			StaticCompoundShapeSettings compound_settings;
-			compound_settings.AddShape(Vec3(-0.5f, 0, 0), Quat::sIdentity(), convex);
-			compound_settings.AddShape(Vec3(0.5f, 0, 0), Quat::sRotation(Vec3::sAxisX(), 0.5f * JPH_PI), convex);
-			shape = compound_settings.Create().Get();
-		}
-		break;
+	{
+		Array<Vec3> tetrahedron;
+		tetrahedron.push_back(Vec3::sZero());
+		tetrahedron.push_back(Vec3(-0.2f, 0, 0.4f));
+		tetrahedron.push_back(Vec3(0, 0.2f, 0));
+		tetrahedron.push_back(Vec3(0.2f, 0, 0.4f));
+		RefConst<Shape> convex = ConvexHullShapeSettings(tetrahedron, 0.01f).Create().Get();
+		StaticCompoundShapeSettings compound_settings;
+		compound_settings.AddShape(Vec3(-0.5f, 0, 0), Quat::sIdentity(), convex);
+		compound_settings.AddShape(Vec3(0.5f, 0, 0), Quat::sRotation(Vec3::sAxisX(), 0.5f * JPH_PI), convex);
+		shape = compound_settings.Create().Get();
+	}
+	break;
 
 	case EProbeShape::StaticCompound2:
-		{
-			scale = scale.Swizzle<SWIZZLE_X, SWIZZLE_X, SWIZZLE_X>(); // Only uniform scale supported
-			Ref<StaticCompoundShapeSettings> compound = new StaticCompoundShapeSettings();
-			compound->AddShape(Vec3(0, 0.5f, 0), Quat::sRotation(Vec3::sAxisZ(), 0.5f * JPH_PI), new BoxShape(Vec3(0.5f, 0.15f, 0.1f)));
-			compound->AddShape(Vec3(0.5f, 0, 0), Quat::sRotation(Vec3::sAxisZ(), 0.5f * JPH_PI), new CylinderShape(0.5f, 0.1f));
-			compound->AddShape(Vec3(0, 0, 0.5f), Quat::sRotation(Vec3::sAxisX(), 0.5f * JPH_PI), new TaperedCapsuleShapeSettings(0.5f, 0.15f, 0.1f));
-			StaticCompoundShapeSettings compound2;
-			compound2.AddShape(Vec3(0, 0, 0), Quat::sRotation(Vec3::sAxisX(), -0.25f * JPH_PI) * Quat::sRotation(Vec3::sAxisZ(), 0.25f * JPH_PI), compound);
-			compound2.AddShape(Vec3(0, -0.4f, 0), Quat::sRotation(Vec3::sAxisX(), 0.25f * JPH_PI) * Quat::sRotation(Vec3::sAxisZ(), -0.75f * JPH_PI), compound);
-			shape = compound2.Create().Get();
-		}
-		break;
+	{
+		scale = scale.Swizzle<SWIZZLE_X, SWIZZLE_X, SWIZZLE_X>(); // Only uniform scale supported
+		Ref<StaticCompoundShapeSettings> compound = new StaticCompoundShapeSettings();
+		compound->AddShape(Vec3(0, 0.5f, 0), Quat::sRotation(Vec3::sAxisZ(), 0.5f * JPH_PI), new BoxShape(Vec3(0.5f, 0.15f, 0.1f)));
+		compound->AddShape(Vec3(0.5f, 0, 0), Quat::sRotation(Vec3::sAxisZ(), 0.5f * JPH_PI), new CylinderShape(0.5f, 0.1f));
+		compound->AddShape(Vec3(0, 0, 0.5f), Quat::sRotation(Vec3::sAxisX(), 0.5f * JPH_PI), new TaperedCapsuleShapeSettings(0.5f, 0.15f, 0.1f));
+		StaticCompoundShapeSettings compound2;
+		compound2.AddShape(Vec3(0, 0, 0), Quat::sRotation(Vec3::sAxisX(), -0.25f * JPH_PI) * Quat::sRotation(Vec3::sAxisZ(), 0.25f * JPH_PI), compound);
+		compound2.AddShape(Vec3(0, -0.4f, 0), Quat::sRotation(Vec3::sAxisX(), 0.25f * JPH_PI) * Quat::sRotation(Vec3::sAxisZ(), -0.75f * JPH_PI), compound);
+		shape = compound2.Create().Get();
+	}
+	break;
 
 	case EProbeShape::MutableCompound:
-		{
-			Array<Vec3> tetrahedron;
-			tetrahedron.push_back(Vec3::sZero());
-			tetrahedron.push_back(Vec3(-0.2f, 0, 0.4f));
-			tetrahedron.push_back(Vec3(0, 0.2f, 0));
-			tetrahedron.push_back(Vec3(0.2f, 0, 0.4f));
-			RefConst<Shape> convex = ConvexHullShapeSettings(tetrahedron, 0.01f).Create().Get();
-			MutableCompoundShapeSettings compound_settings;
-			compound_settings.AddShape(Vec3(-0.5f, 0, 0), Quat::sIdentity(), convex);
-			compound_settings.AddShape(Vec3(0.5f, 0, 0), Quat::sRotation(Vec3::sAxisX(), 0.5f * JPH_PI), convex);
-			shape = compound_settings.Create().Get();
-		}
-		break;
+	{
+		Array<Vec3> tetrahedron;
+		tetrahedron.push_back(Vec3::sZero());
+		tetrahedron.push_back(Vec3(-0.2f, 0, 0.4f));
+		tetrahedron.push_back(Vec3(0, 0.2f, 0));
+		tetrahedron.push_back(Vec3(0.2f, 0, 0.4f));
+		RefConst<Shape> convex = ConvexHullShapeSettings(tetrahedron, 0.01f).Create().Get();
+		MutableCompoundShapeSettings compound_settings;
+		compound_settings.AddShape(Vec3(-0.5f, 0, 0), Quat::sIdentity(), convex);
+		compound_settings.AddShape(Vec3(0.5f, 0, 0), Quat::sRotation(Vec3::sAxisX(), 0.5f * JPH_PI), convex);
+		shape = compound_settings.Create().Get();
+	}
+	break;
 
 	case EProbeShape::Mesh:
 		shape = ShapeCreator::CreateTorusMesh(2.0f, 0.25f);
@@ -816,7 +818,7 @@ RefConst<Shape> SamplesApp::CreateProbeShape()
 RefConst<Shape> SamplesApp::CreateShootObjectShape()
 {
 	// Get the scale
-	Vec3 scale = mShootObjectScaleShape? mShootObjectShapeScale : Vec3::sReplicate(1.0f);
+	Vec3 scale = mShootObjectScaleShape ? mShootObjectShapeScale : Vec3::sReplicate(1.0f);
 
 	// Make it minimally -0.1 or 0.1 depending on the sign
 	Vec3 clamped_value = Vec3::sSelect(Vec3::sReplicate(-0.1f), Vec3::sReplicate(0.1f), Vec3::sGreaterOrEqual(scale, Vec3::sZero()));
@@ -832,41 +834,41 @@ RefConst<Shape> SamplesApp::CreateShootObjectShape()
 		break;
 
 	case EShootObjectShape::ConvexHull:
-		{
-			Array<Vec3> vertices = {
-				Vec3(-0.044661f, 0.001230f, 0.003877f),
-				Vec3(-0.024743f, -0.042562f, 0.003877f),
-				Vec3(-0.012336f, -0.021073f, 0.048484f),
-				Vec3(0.016066f, 0.028121f, -0.049904f),
-				Vec3(-0.023734f, 0.043275f, -0.024153f),
-				Vec3(0.020812f, 0.036341f, -0.019530f),
-				Vec3(0.012495f, 0.021936f, 0.045288f),
-				Vec3(0.026750f, 0.001230f, 0.049273f),
-				Vec3(0.045495f, 0.001230f, -0.022077f),
-				Vec3(0.022193f, -0.036274f, -0.021126f),
-				Vec3(0.022781f, -0.037291f, 0.029558f),
-				Vec3(0.014691f, -0.023280f, 0.052897f),
-				Vec3(-0.012187f, -0.020815f, -0.040214f),
-				Vec3(0.000541f, 0.001230f, -0.056224f),
-				Vec3(-0.039882f, 0.001230f, -0.019461f),
-				Vec3(0.000541f, 0.001230f, 0.056022f),
-				Vec3(-0.020614f, -0.035411f, -0.020551f),
-				Vec3(-0.019485f, 0.035916f, 0.027001f),
-				Vec3(-0.023968f, 0.043680f, 0.003877f),
-				Vec3(-0.020051f, 0.001230f, 0.039543f),
-				Vec3(0.026213f, 0.001230f, -0.040589f),
-				Vec3(-0.010797f, 0.020868f, 0.043152f),
-				Vec3(-0.012378f, 0.023607f, -0.040876f)
-			};
+	{
+		Array<Vec3> vertices = {
+			Vec3(-0.044661f, 0.001230f, 0.003877f),
+			Vec3(-0.024743f, -0.042562f, 0.003877f),
+			Vec3(-0.012336f, -0.021073f, 0.048484f),
+			Vec3(0.016066f, 0.028121f, -0.049904f),
+			Vec3(-0.023734f, 0.043275f, -0.024153f),
+			Vec3(0.020812f, 0.036341f, -0.019530f),
+			Vec3(0.012495f, 0.021936f, 0.045288f),
+			Vec3(0.026750f, 0.001230f, 0.049273f),
+			Vec3(0.045495f, 0.001230f, -0.022077f),
+			Vec3(0.022193f, -0.036274f, -0.021126f),
+			Vec3(0.022781f, -0.037291f, 0.029558f),
+			Vec3(0.014691f, -0.023280f, 0.052897f),
+			Vec3(-0.012187f, -0.020815f, -0.040214f),
+			Vec3(0.000541f, 0.001230f, -0.056224f),
+			Vec3(-0.039882f, 0.001230f, -0.019461f),
+			Vec3(0.000541f, 0.001230f, 0.056022f),
+			Vec3(-0.020614f, -0.035411f, -0.020551f),
+			Vec3(-0.019485f, 0.035916f, 0.027001f),
+			Vec3(-0.023968f, 0.043680f, 0.003877f),
+			Vec3(-0.020051f, 0.001230f, 0.039543f),
+			Vec3(0.026213f, 0.001230f, -0.040589f),
+			Vec3(-0.010797f, 0.020868f, 0.043152f),
+			Vec3(-0.012378f, 0.023607f, -0.040876f)
+		};
 
-			// This shape was created at 0.2 world scale, rescale it to the current world scale
-			float vert_scale = GetWorldScale() / 0.2f;
-			for (Vec3 &v : vertices)
-				v *= vert_scale;
+		// This shape was created at 0.2 world scale, rescale it to the current world scale
+		float vert_scale = GetWorldScale() / 0.2f;
+		for (Vec3& v : vertices)
+			v *= vert_scale;
 
-			shape = ConvexHullShapeSettings(vertices).Create().Get();
-		}
-		break;
+		shape = ConvexHullShapeSettings(vertices).Create().Get();
+	}
+	break;
 
 	case EShootObjectShape::ThinBar:
 		shape = BoxShapeSettings(Vec3(0.05f, 0.8f, 0.03f), 0.015f).Create().Get();
@@ -893,10 +895,10 @@ void SamplesApp::ShootObject()
 	mPhysicsSystem->GetBodyInterface().CreateAndAddBody(creation_settings, EActivation::Activate);
 }
 
-bool SamplesApp::CastProbe(float inProbeLength, float &outFraction, RVec3 &outPosition, BodyID &outID)
+bool SamplesApp::CastProbe(float inProbeLength, float& outFraction, RVec3& outPosition, BodyID& outID)
 {
 	// Determine start and direction of the probe
-	const CameraState &camera = GetCamera();
+	const CameraState& camera = GetCamera();
 	RVec3 start = camera.mPos;
 	Vec3 direction = inProbeLength * camera.mForward;
 
@@ -915,66 +917,158 @@ bool SamplesApp::CastProbe(float inProbeLength, float &outFraction, RVec3 &outPo
 	switch (mProbeMode)
 	{
 	case EProbeMode::Pick:
-		{
-			// Create ray
-			RRayCast ray { start, direction };
+	{
+		// Create ray
+		RRayCast ray{ start, direction };
 
-			// Cast ray
-			RayCastResult hit;
-			had_hit = mPhysicsSystem->GetNarrowPhaseQuery().CastRay(ray, hit, SpecifiedBroadPhaseLayerFilter(BroadPhaseLayers::MOVING), SpecifiedObjectLayerFilter(Layers::MOVING));
+		// Cast ray
+		RayCastResult hit;
+		had_hit = mPhysicsSystem->GetNarrowPhaseQuery().CastRay(ray, hit, SpecifiedBroadPhaseLayerFilter(BroadPhaseLayers::MOVING), SpecifiedObjectLayerFilter(Layers::MOVING));
 
-			// Fill in results
-			outPosition = ray.GetPointOnRay(hit.mFraction);
-			outFraction = hit.mFraction;
-			outID = hit.mBodyID;
+		// Fill in results
+		outPosition = ray.GetPointOnRay(hit.mFraction);
+		outFraction = hit.mFraction;
+		outID = hit.mBodyID;
 
-			if (had_hit)
-				mDebugRenderer->DrawMarker(outPosition, Color::sYellow, 0.1f);
-			else
-				mDebugRenderer->DrawMarker(camera.mPos + 0.1f * camera.mForward, Color::sRed, 0.001f);
-		}
-		break;
+		if (had_hit)
+			mDebugRenderer->DrawMarker(outPosition, Color::sYellow, 0.1f);
+		else
+			mDebugRenderer->DrawMarker(camera.mPos + 0.1f * camera.mForward, Color::sRed, 0.001f);
+	}
+	break;
 
 	case EProbeMode::Ray:
+	{
+		// Create ray
+		RRayCast ray{ start, direction };
+
+		// Cast ray
+		RayCastResult hit;
+		had_hit = mPhysicsSystem->GetNarrowPhaseQuery().CastRay(ray, hit);
+
+		// Fill in results
+		outPosition = ray.GetPointOnRay(hit.mFraction);
+		outFraction = hit.mFraction;
+		outID = hit.mBodyID;
+
+		// Draw results
+		if (had_hit)
 		{
-			// Create ray
-			RRayCast ray { start, direction };
+			BodyLockRead lock(mPhysicsSystem->GetBodyLockInterface(), hit.mBodyID);
+			if (lock.Succeeded())
+			{
+				const Body& hit_body = lock.GetBody();
 
-			// Cast ray
-			RayCastResult hit;
-			had_hit = mPhysicsSystem->GetNarrowPhaseQuery().CastRay(ray, hit);
+				// Draw hit
+				Color color = hit_body.IsDynamic() ? Color::sYellow : Color::sOrange;
+				mDebugRenderer->DrawLine(start, outPosition, color);
+				mDebugRenderer->DrawLine(outPosition, start + direction, Color::sRed);
 
+				// Draw material
+				const PhysicsMaterial* material2 = hit_body.GetShape()->GetMaterial(hit.mSubShapeID2);
+				mDebugRenderer->DrawText3D(outPosition, material2->GetDebugName());
+
+				// Draw normal
+				Vec3 normal = hit_body.GetWorldSpaceSurfaceNormal(hit.mSubShapeID2, outPosition);
+				mDebugRenderer->DrawArrow(outPosition, outPosition + normal, color, 0.01f);
+
+				// Draw perpendicular axis to indicate hit position
+				Vec3 perp1 = normal.GetNormalizedPerpendicular();
+				Vec3 perp2 = normal.Cross(perp1);
+				mDebugRenderer->DrawLine(outPosition - 0.1f * perp1, outPosition + 0.1f * perp1, color);
+				mDebugRenderer->DrawLine(outPosition - 0.1f * perp2, outPosition + 0.1f * perp2, color);
+
+				// Get and draw the result of GetSupportingFace
+				if (mDrawSupportingFace)
+				{
+					Shape::SupportingFace face;
+					hit_body.GetTransformedShape().GetSupportingFace(hit.mSubShapeID2, -normal, base_offset, face);
+					mDebugRenderer->DrawWirePolygon(RMat44::sTranslation(base_offset), face, Color::sWhite, 0.01f);
+				}
+			}
+		}
+		else
+		{
+			mDebugRenderer->DrawMarker(outPosition, Color::sRed, 0.1f);
+		}
+	}
+	break;
+
+	case EProbeMode::RayCollector:
+	{
+		// Create ray
+		RRayCast ray{ start, direction };
+
+		// Create settings
+		RayCastSettings settings;
+		settings.mBackFaceMode = mBackFaceMode;
+		settings.mTreatConvexAsSolid = mTreatConvexAsSolid;
+
+		// Cast ray
+		Array<RayCastResult> hits;
+		if (mMaxHits == 0)
+		{
+			AnyHitCollisionCollector<CastRayCollector> collector;
+			mPhysicsSystem->GetNarrowPhaseQuery().CastRay(ray, settings, collector);
+			if (collector.HadHit())
+				hits.push_back(collector.mHit);
+		}
+		else if (mMaxHits == 1)
+		{
+			ClosestHitCollisionCollector<CastRayCollector> collector;
+			mPhysicsSystem->GetNarrowPhaseQuery().CastRay(ray, settings, collector);
+			if (collector.HadHit())
+				hits.push_back(collector.mHit);
+		}
+		else
+		{
+			AllHitCollisionCollector<CastRayCollector> collector;
+			mPhysicsSystem->GetNarrowPhaseQuery().CastRay(ray, settings, collector);
+			collector.Sort();
+			hits.insert(hits.end(), collector.mHits.begin(), collector.mHits.end());
+			if ((int)hits.size() > mMaxHits)
+				hits.resize(mMaxHits);
+		}
+
+		had_hit = !hits.empty();
+		if (had_hit)
+		{
 			// Fill in results
-			outPosition = ray.GetPointOnRay(hit.mFraction);
-			outFraction = hit.mFraction;
-			outID = hit.mBodyID;
+			RayCastResult& first_hit = hits.front();
+			outPosition = ray.GetPointOnRay(first_hit.mFraction);
+			outFraction = first_hit.mFraction;
+			outID = first_hit.mBodyID;
 
 			// Draw results
-			if (had_hit)
+			RVec3 prev_position = start;
+			bool c = false;
+			for (const RayCastResult& hit : hits)
 			{
+				// Draw line
+				RVec3 position = ray.GetPointOnRay(hit.mFraction);
+				mDebugRenderer->DrawLine(prev_position, position, c ? Color::sGrey : Color::sWhite);
+				c = !c;
+				prev_position = position;
+
 				BodyLockRead lock(mPhysicsSystem->GetBodyLockInterface(), hit.mBodyID);
 				if (lock.Succeeded())
 				{
-					const Body &hit_body = lock.GetBody();
-
-					// Draw hit
-					Color color = hit_body.IsDynamic()? Color::sYellow : Color::sOrange;
-					mDebugRenderer->DrawLine(start, outPosition, color);
-					mDebugRenderer->DrawLine(outPosition, start + direction, Color::sRed);
+					const Body& hit_body = lock.GetBody();
 
 					// Draw material
-					const PhysicsMaterial *material2 = hit_body.GetShape()->GetMaterial(hit.mSubShapeID2);
-					mDebugRenderer->DrawText3D(outPosition, material2->GetDebugName());
+					const PhysicsMaterial* material2 = hit_body.GetShape()->GetMaterial(hit.mSubShapeID2);
+					mDebugRenderer->DrawText3D(position, material2->GetDebugName());
 
 					// Draw normal
-					Vec3 normal = hit_body.GetWorldSpaceSurfaceNormal(hit.mSubShapeID2, outPosition);
-					mDebugRenderer->DrawArrow(outPosition, outPosition + normal, color, 0.01f);
+					Color color = hit_body.IsDynamic() ? Color::sYellow : Color::sOrange;
+					Vec3 normal = hit_body.GetWorldSpaceSurfaceNormal(hit.mSubShapeID2, position);
+					mDebugRenderer->DrawArrow(position, position + normal, color, 0.01f);
 
 					// Draw perpendicular axis to indicate hit position
 					Vec3 perp1 = normal.GetNormalizedPerpendicular();
 					Vec3 perp2 = normal.Cross(perp1);
-					mDebugRenderer->DrawLine(outPosition - 0.1f * perp1, outPosition + 0.1f * perp1, color);
-					mDebugRenderer->DrawLine(outPosition - 0.1f * perp2, outPosition + 0.1f * perp2, color);
+					mDebugRenderer->DrawLine(position - 0.1f * perp1, position + 0.1f * perp1, color);
+					mDebugRenderer->DrawLine(position - 0.1f * perp2, position + 0.1f * perp2, color);
 
 					// Get and draw the result of GetSupportingFace
 					if (mDrawSupportingFace)
@@ -985,652 +1079,560 @@ bool SamplesApp::CastProbe(float inProbeLength, float &outFraction, RVec3 &outPo
 					}
 				}
 			}
-			else
-			{
-				mDebugRenderer->DrawMarker(outPosition, Color::sRed, 0.1f);
-			}
-		}
-		break;
 
-	case EProbeMode::RayCollector:
+			// Draw remainder of line
+			mDebugRenderer->DrawLine(ray.GetPointOnRay(hits.back().mFraction), start + direction, Color::sRed);
+		}
+		else
 		{
-			// Create ray
-			RRayCast ray { start, direction };
-
-			// Create settings
-			RayCastSettings settings;
-			settings.mBackFaceMode = mBackFaceMode;
-			settings.mTreatConvexAsSolid = mTreatConvexAsSolid;
-
-			// Cast ray
-			Array<RayCastResult> hits;
-			if (mMaxHits == 0)
-			{
-				AnyHitCollisionCollector<CastRayCollector> collector;
-				mPhysicsSystem->GetNarrowPhaseQuery().CastRay(ray, settings, collector);
-				if (collector.HadHit())
-					hits.push_back(collector.mHit);
-			}
-			else if (mMaxHits == 1)
-			{
-				ClosestHitCollisionCollector<CastRayCollector> collector;
-				mPhysicsSystem->GetNarrowPhaseQuery().CastRay(ray, settings, collector);
-				if (collector.HadHit())
-					hits.push_back(collector.mHit);
-			}
-			else
-			{
-				AllHitCollisionCollector<CastRayCollector> collector;
-				mPhysicsSystem->GetNarrowPhaseQuery().CastRay(ray, settings, collector);
-				collector.Sort();
-				hits.insert(hits.end(), collector.mHits.begin(), collector.mHits.end());
-				if ((int)hits.size() > mMaxHits)
-					hits.resize(mMaxHits);
-			}
-
-			had_hit = !hits.empty();
-			if (had_hit)
-			{
-				// Fill in results
-				RayCastResult &first_hit = hits.front();
-				outPosition = ray.GetPointOnRay(first_hit.mFraction);
-				outFraction = first_hit.mFraction;
-				outID = first_hit.mBodyID;
-	
-				// Draw results
-				RVec3 prev_position = start;
-				bool c = false;
-				for (const RayCastResult &hit : hits)
-				{
-					// Draw line
-					RVec3 position = ray.GetPointOnRay(hit.mFraction);
-					mDebugRenderer->DrawLine(prev_position, position, c? Color::sGrey : Color::sWhite);
-					c = !c;
-					prev_position = position;
-
-					BodyLockRead lock(mPhysicsSystem->GetBodyLockInterface(), hit.mBodyID);
-					if (lock.Succeeded())
-					{
-						const Body &hit_body = lock.GetBody();
-
-						// Draw material
-						const PhysicsMaterial *material2 = hit_body.GetShape()->GetMaterial(hit.mSubShapeID2);
-						mDebugRenderer->DrawText3D(position, material2->GetDebugName());
-
-						// Draw normal
-						Color color = hit_body.IsDynamic()? Color::sYellow : Color::sOrange;
-						Vec3 normal = hit_body.GetWorldSpaceSurfaceNormal(hit.mSubShapeID2, position);
-						mDebugRenderer->DrawArrow(position, position + normal, color, 0.01f);
-
-						// Draw perpendicular axis to indicate hit position
-						Vec3 perp1 = normal.GetNormalizedPerpendicular();
-						Vec3 perp2 = normal.Cross(perp1);
-						mDebugRenderer->DrawLine(position - 0.1f * perp1, position + 0.1f * perp1, color);
-						mDebugRenderer->DrawLine(position - 0.1f * perp2, position + 0.1f * perp2, color);
-
-						// Get and draw the result of GetSupportingFace
-						if (mDrawSupportingFace)
-						{
-							Shape::SupportingFace face;
-							hit_body.GetTransformedShape().GetSupportingFace(hit.mSubShapeID2, -normal, base_offset, face);
-							mDebugRenderer->DrawWirePolygon(RMat44::sTranslation(base_offset), face, Color::sWhite, 0.01f);
-						}
-					}
-				}
-
-				// Draw remainder of line
-				mDebugRenderer->DrawLine(ray.GetPointOnRay(hits.back().mFraction), start + direction, Color::sRed);
-			}
-			else
-			{
-				// Draw 'miss'
-				mDebugRenderer->DrawLine(start, start + direction, Color::sRed);
-				mDebugRenderer->DrawMarker(start + direction, Color::sRed, 0.1f);
-			}
+			// Draw 'miss'
+			mDebugRenderer->DrawLine(start, start + direction, Color::sRed);
+			mDebugRenderer->DrawMarker(start + direction, Color::sRed, 0.1f);
 		}
-		break;
+	}
+	break;
 
 	case EProbeMode::CollidePoint:
+	{
+		// Create point
+		const float fraction = 0.1f;
+		RVec3 point = start + fraction * direction;
+
+		// Collide point
+		AllHitCollisionCollector<CollidePointCollector> collector;
+		mPhysicsSystem->GetNarrowPhaseQuery().CollidePoint(point, collector);
+
+		had_hit = !collector.mHits.empty();
+		if (had_hit)
 		{
-			// Create point
-			const float fraction = 0.1f;
-			RVec3 point = start + fraction * direction;
-
-			// Collide point
-			AllHitCollisionCollector<CollidePointCollector> collector;
-			mPhysicsSystem->GetNarrowPhaseQuery().CollidePoint(point, collector);
-
-			had_hit = !collector.mHits.empty();
-			if (had_hit)
+			// Draw results
+			for (const CollidePointResult& hit : collector.mHits)
 			{
-				// Draw results
-				for (const CollidePointResult &hit : collector.mHits)
+				BodyLockRead lock(mPhysicsSystem->GetBodyLockInterface(), hit.mBodyID);
+				if (lock.Succeeded())
 				{
-					BodyLockRead lock(mPhysicsSystem->GetBodyLockInterface(), hit.mBodyID);
-					if (lock.Succeeded())
-					{
-						const Body &hit_body = lock.GetBody();
+					const Body& hit_body = lock.GetBody();
 
-						// Draw bounding box
-						Color color = hit_body.IsDynamic()? Color::sYellow : Color::sOrange;
-						mDebugRenderer->DrawWireBox(hit_body.GetCenterOfMassTransform(), hit_body.GetShape()->GetLocalBounds(), color);
-					}
+					// Draw bounding box
+					Color color = hit_body.IsDynamic() ? Color::sYellow : Color::sOrange;
+					mDebugRenderer->DrawWireBox(hit_body.GetCenterOfMassTransform(), hit_body.GetShape()->GetLocalBounds(), color);
 				}
 			}
-
-			// Draw test location
-			mDebugRenderer->DrawMarker(point, had_hit? Color::sGreen : Color::sRed, 0.1f);
 		}
-		break;
+
+		// Draw test location
+		mDebugRenderer->DrawMarker(point, had_hit ? Color::sGreen : Color::sRed, 0.1f);
+	}
+	break;
 
 	case EProbeMode::CollideShape:
+	{
+		// Create shape cast
+		RefConst<Shape> shape = CreateProbeShape();
+		Mat44 rotation = Mat44::sRotation(Vec3::sAxisX(), 0.1f * JPH_PI) * Mat44::sRotation(Vec3::sAxisY(), 0.2f * JPH_PI);
+		Mat44 com = Mat44::sTranslation(shape->GetCenterOfMass());
+		RMat44 shape_transform(RMat44::sTranslation(start + 5.0f * camera.mForward) * rotation * com);
+
+		// Create settings
+		CollideShapeSettings settings;
+		settings.mActiveEdgeMode = mActiveEdgeMode;
+		settings.mBackFaceMode = mBackFaceMode;
+		settings.mCollectFacesMode = mCollectFacesMode;
+		settings.mMaxSeparationDistance = mMaxSeparationDistance;
+
+		Array<CollideShapeResult> hits;
+		if (mMaxHits == 0)
 		{
-			// Create shape cast
-			RefConst<Shape> shape = CreateProbeShape();
-			Mat44 rotation = Mat44::sRotation(Vec3::sAxisX(), 0.1f * JPH_PI) * Mat44::sRotation(Vec3::sAxisY(), 0.2f * JPH_PI);
-			Mat44 com = Mat44::sTranslation(shape->GetCenterOfMass());
-			RMat44 shape_transform(RMat44::sTranslation(start + 5.0f * camera.mForward) * rotation * com);
+			AnyHitCollisionCollector<CollideShapeCollector> collector;
+			mPhysicsSystem->GetNarrowPhaseQuery().CollideShape(shape, Vec3::sReplicate(1.0f), shape_transform, settings, base_offset, collector);
+			if (collector.HadHit())
+				hits.push_back(collector.mHit);
+		}
+		else if (mMaxHits == 1)
+		{
+			ClosestHitCollisionCollector<CollideShapeCollector> collector;
+			mPhysicsSystem->GetNarrowPhaseQuery().CollideShape(shape, Vec3::sReplicate(1.0f), shape_transform, settings, base_offset, collector);
+			if (collector.HadHit())
+				hits.push_back(collector.mHit);
+		}
+		else
+		{
+			AllHitCollisionCollector<CollideShapeCollector> collector;
+			mPhysicsSystem->GetNarrowPhaseQuery().CollideShape(shape, Vec3::sReplicate(1.0f), shape_transform, settings, base_offset, collector);
+			collector.Sort();
+			hits.insert(hits.end(), collector.mHits.begin(), collector.mHits.end());
+			if ((int)hits.size() > mMaxHits)
+				hits.resize(mMaxHits);
+		}
 
-			// Create settings
-			CollideShapeSettings settings;
-			settings.mActiveEdgeMode = mActiveEdgeMode;
-			settings.mBackFaceMode = mBackFaceMode;
-			settings.mCollectFacesMode = mCollectFacesMode;
-			settings.mMaxSeparationDistance = mMaxSeparationDistance;
-
-			Array<CollideShapeResult> hits;
-			if (mMaxHits == 0)
+		had_hit = !hits.empty();
+		if (had_hit)
+		{
+			// Draw results
+			for (const CollideShapeResult& hit : hits)
 			{
-				AnyHitCollisionCollector<CollideShapeCollector> collector;
-				mPhysicsSystem->GetNarrowPhaseQuery().CollideShape(shape, Vec3::sReplicate(1.0f), shape_transform, settings, base_offset, collector);
-				if (collector.HadHit())
-					hits.push_back(collector.mHit);
-			}
-			else if (mMaxHits == 1)
-			{
-				ClosestHitCollisionCollector<CollideShapeCollector> collector;
-				mPhysicsSystem->GetNarrowPhaseQuery().CollideShape(shape, Vec3::sReplicate(1.0f), shape_transform, settings, base_offset, collector);
-				if (collector.HadHit())
-					hits.push_back(collector.mHit);
-			}
-			else
-			{
-				AllHitCollisionCollector<CollideShapeCollector> collector;
-				mPhysicsSystem->GetNarrowPhaseQuery().CollideShape(shape, Vec3::sReplicate(1.0f), shape_transform, settings, base_offset, collector);
-				collector.Sort();
-				hits.insert(hits.end(), collector.mHits.begin(), collector.mHits.end());
-				if ((int)hits.size() > mMaxHits)
-					hits.resize(mMaxHits);
-			}
-
-			had_hit = !hits.empty();
-			if (had_hit)
-			{
-				// Draw results
-				for (const CollideShapeResult &hit : hits)
+				// Draw 'hit'
+				BodyLockRead lock(mPhysicsSystem->GetBodyLockInterface(), hit.mBodyID2);
+				if (lock.Succeeded())
 				{
-					// Draw 'hit'
-					BodyLockRead lock(mPhysicsSystem->GetBodyLockInterface(), hit.mBodyID2);
-					if (lock.Succeeded())
+					const Body& hit_body = lock.GetBody();
+
+					// Draw contact
+					RVec3 contact_position1 = base_offset + hit.mContactPointOn1;
+					RVec3 contact_position2 = base_offset + hit.mContactPointOn2;
+					mDebugRenderer->DrawMarker(contact_position1, Color::sGreen, 0.1f);
+					mDebugRenderer->DrawMarker(contact_position2, Color::sRed, 0.1f);
+
+					Vec3 pen_axis = hit.mPenetrationAxis;
+					float pen_axis_len = pen_axis.Length();
+					if (pen_axis_len > 0.0f)
 					{
-						const Body &hit_body = lock.GetBody();
+						pen_axis /= pen_axis_len;
 
-						// Draw contact
-						RVec3 contact_position1 = base_offset + hit.mContactPointOn1;
-						RVec3 contact_position2 = base_offset + hit.mContactPointOn2;
-						mDebugRenderer->DrawMarker(contact_position1, Color::sGreen, 0.1f);
-						mDebugRenderer->DrawMarker(contact_position2, Color::sRed, 0.1f);
+						// Draw penetration axis with length of the penetration
+						mDebugRenderer->DrawArrow(contact_position2, contact_position2 + pen_axis * hit.mPenetrationDepth, Color::sYellow, 0.01f);
 
-						Vec3 pen_axis = hit.mPenetrationAxis;
-						float pen_axis_len = pen_axis.Length();
-						if (pen_axis_len > 0.0f)
-						{
-							pen_axis /= pen_axis_len;
-
-							// Draw penetration axis with length of the penetration
-							mDebugRenderer->DrawArrow(contact_position2, contact_position2 + pen_axis * hit.mPenetrationDepth, Color::sYellow, 0.01f);
-
-							// Draw normal (flipped so it points towards body 1)
-							mDebugRenderer->DrawArrow(contact_position2, contact_position2 - pen_axis, Color::sOrange, 0.01f);
-						}
-
-						// Draw material
-						const PhysicsMaterial *material2 = hit_body.GetShape()->GetMaterial(hit.mSubShapeID2);
-						mDebugRenderer->DrawText3D(contact_position2, material2->GetDebugName());
-
-						// Draw faces
-						mDebugRenderer->DrawWirePolygon(RMat44::sTranslation(base_offset), hit.mShape1Face, Color::sYellow, 0.01f);
-						mDebugRenderer->DrawWirePolygon(RMat44::sTranslation(base_offset), hit.mShape2Face, Color::sRed, 0.01f);
+						// Draw normal (flipped so it points towards body 1)
+						mDebugRenderer->DrawArrow(contact_position2, contact_position2 - pen_axis, Color::sOrange, 0.01f);
 					}
+
+					// Draw material
+					const PhysicsMaterial* material2 = hit_body.GetShape()->GetMaterial(hit.mSubShapeID2);
+					mDebugRenderer->DrawText3D(contact_position2, material2->GetDebugName());
+
+					// Draw faces
+					mDebugRenderer->DrawWirePolygon(RMat44::sTranslation(base_offset), hit.mShape1Face, Color::sYellow, 0.01f);
+					mDebugRenderer->DrawWirePolygon(RMat44::sTranslation(base_offset), hit.mShape2Face, Color::sRed, 0.01f);
 				}
 			}
-
-		#ifdef JPH_DEBUG_RENDERER
-			// Draw shape
-			shape->Draw(mDebugRenderer, shape_transform, Vec3::sReplicate(1.0f), had_hit? Color::sGreen : Color::sGrey, false, false);
-		#endif // JPH_DEBUG_RENDERER
 		}
-		break;
+
+#ifdef JPH_DEBUG_RENDERER
+		// Draw shape
+		shape->Draw(mDebugRenderer, shape_transform, Vec3::sReplicate(1.0f), had_hit ? Color::sGreen : Color::sGrey, false, false);
+#endif // JPH_DEBUG_RENDERER
+	}
+	break;
 
 	case EProbeMode::CastShape:
+	{
+		// Create shape cast
+		RefConst<Shape> shape = CreateProbeShape();
+		Mat44 rotation = Mat44::sRotation(Vec3::sAxisX(), 0.1f * JPH_PI) * Mat44::sRotation(Vec3::sAxisY(), 0.2f * JPH_PI);
+		RShapeCast shape_cast = RShapeCast::sFromWorldTransform(shape, Vec3::sReplicate(1.0f), RMat44::sTranslation(start) * rotation, direction);
+
+		// Settings
+		ShapeCastSettings settings;
+		settings.mUseShrunkenShapeAndConvexRadius = mUseShrunkenShapeAndConvexRadius;
+		settings.mActiveEdgeMode = mActiveEdgeMode;
+		settings.mBackFaceModeTriangles = mBackFaceMode;
+		settings.mBackFaceModeConvex = mBackFaceMode;
+		settings.mReturnDeepestPoint = mReturnDeepestPoint;
+		settings.mCollectFacesMode = mCollectFacesMode;
+
+		// Cast shape
+		Array<ShapeCastResult> hits;
+		if (mMaxHits == 0)
 		{
-			// Create shape cast
-			RefConst<Shape> shape = CreateProbeShape();
-			Mat44 rotation = Mat44::sRotation(Vec3::sAxisX(), 0.1f * JPH_PI) * Mat44::sRotation(Vec3::sAxisY(), 0.2f * JPH_PI);
-			RShapeCast shape_cast = RShapeCast::sFromWorldTransform(shape, Vec3::sReplicate(1.0f), RMat44::sTranslation(start) * rotation, direction);
-
-			// Settings
-			ShapeCastSettings settings;
-			settings.mUseShrunkenShapeAndConvexRadius = mUseShrunkenShapeAndConvexRadius;
-			settings.mActiveEdgeMode = mActiveEdgeMode;
-			settings.mBackFaceModeTriangles = mBackFaceMode;
-			settings.mBackFaceModeConvex = mBackFaceMode;
-			settings.mReturnDeepestPoint = mReturnDeepestPoint;
-			settings.mCollectFacesMode = mCollectFacesMode;
-
-			// Cast shape
-			Array<ShapeCastResult> hits;
-			if (mMaxHits == 0)
-			{
-				AnyHitCollisionCollector<CastShapeCollector> collector;
-				mPhysicsSystem->GetNarrowPhaseQuery().CastShape(shape_cast, settings, base_offset, collector);
-				if (collector.HadHit())
-					hits.push_back(collector.mHit);
-			}
-			else if (mMaxHits == 1)
-			{
-				ClosestHitCollisionCollector<CastShapeCollector> collector;
-				mPhysicsSystem->GetNarrowPhaseQuery().CastShape(shape_cast, settings, base_offset, collector);
-				if (collector.HadHit())
-					hits.push_back(collector.mHit);
-			}
-			else
-			{
-				AllHitCollisionCollector<CastShapeCollector> collector;
-				mPhysicsSystem->GetNarrowPhaseQuery().CastShape(shape_cast, settings, base_offset, collector);
-				collector.Sort();
-				hits.insert(hits.end(), collector.mHits.begin(), collector.mHits.end());
-				if ((int)hits.size() > mMaxHits)
-					hits.resize(mMaxHits);
-			}
-
-			had_hit = !hits.empty();		
-			if (had_hit)
-			{
-				// Fill in results
-				ShapeCastResult &first_hit = hits.front();
-				outPosition = shape_cast.GetPointOnRay(first_hit.mFraction);
-				outFraction = first_hit.mFraction;
-				outID = first_hit.mBodyID2;
-
-				// Draw results
-				RVec3 prev_position = start;
-				bool c = false;
-				for (const ShapeCastResult &hit : hits)
-				{
-					// Draw line
-					RVec3 position = shape_cast.GetPointOnRay(hit.mFraction);
-					mDebugRenderer->DrawLine(prev_position, position, c? Color::sGrey : Color::sWhite);
-					c = !c;
-					prev_position = position;
-
-					BodyLockRead lock(mPhysicsSystem->GetBodyLockInterface(), hit.mBodyID2);
-					if (lock.Succeeded())
-					{
-						const Body &hit_body = lock.GetBody();
-
-						// Draw shape
-						Color color = hit_body.IsDynamic()? Color::sYellow : Color::sOrange;
-					#ifdef JPH_DEBUG_RENDERER
-						shape_cast.mShape->Draw(mDebugRenderer, shape_cast.mCenterOfMassStart.PostTranslated(hit.mFraction * shape_cast.mDirection), Vec3::sReplicate(1.0f), color, false, false);
-					#endif // JPH_DEBUG_RENDERER
-
-						// Draw normal
-						RVec3 contact_position1 = base_offset + hit.mContactPointOn1;
-						RVec3 contact_position2 = base_offset + hit.mContactPointOn2;
-						Vec3 normal = hit.mPenetrationAxis.Normalized();
-						mDebugRenderer->DrawArrow(contact_position2, contact_position2 - normal, color, 0.01f); // Flip to make it point towards the cast body
-
-						// Contact position 1
-						mDebugRenderer->DrawMarker(contact_position1, Color::sGreen, 0.1f);
-
-						// Draw perpendicular axis to indicate contact position 2
-						Vec3 perp1 = normal.GetNormalizedPerpendicular();
-						Vec3 perp2 = normal.Cross(perp1);
-						mDebugRenderer->DrawLine(contact_position2 - 0.1f * perp1, contact_position2 + 0.1f * perp1, color);
-						mDebugRenderer->DrawLine(contact_position2 - 0.1f * perp2, contact_position2 + 0.1f * perp2, color);
-
-						// Draw material
-						const PhysicsMaterial *material2 = hit_body.GetShape()->GetMaterial(hit.mSubShapeID2);
-						mDebugRenderer->DrawText3D(position, material2->GetDebugName());
-
-						// Draw faces
-						mDebugRenderer->DrawWirePolygon(RMat44::sTranslation(base_offset), hit.mShape1Face, Color::sYellow, 0.01f);
-						mDebugRenderer->DrawWirePolygon(RMat44::sTranslation(base_offset), hit.mShape2Face, Color::sRed, 0.01f);
-					}
-				}
-
-				// Draw remainder of line
-				mDebugRenderer->DrawLine(shape_cast.GetPointOnRay(hits.back().mFraction), start + direction, Color::sRed);
-			}
-			else
-			{
-				// Draw 'miss'
-				mDebugRenderer->DrawLine(start, start + direction, Color::sRed);
-			#ifdef JPH_DEBUG_RENDERER
-				shape_cast.mShape->Draw(mDebugRenderer, shape_cast.mCenterOfMassStart.PostTranslated(shape_cast.mDirection), Vec3::sReplicate(1.0f), Color::sRed, false, false);
-			#endif // JPH_DEBUG_RENDERER
-			}
+			AnyHitCollisionCollector<CastShapeCollector> collector;
+			mPhysicsSystem->GetNarrowPhaseQuery().CastShape(shape_cast, settings, base_offset, collector);
+			if (collector.HadHit())
+				hits.push_back(collector.mHit);
 		}
-		break;
-
-	case EProbeMode::TransformedShape:
+		else if (mMaxHits == 1)
 		{
-			// Create box
-			const float fraction = 0.2f;
-			RVec3 center = start + fraction * direction;
-			Vec3 half_extent = 0.5f * mShapeScale;
-			AABox box(center - half_extent, center + half_extent);
+			ClosestHitCollisionCollector<CastShapeCollector> collector;
+			mPhysicsSystem->GetNarrowPhaseQuery().CastShape(shape_cast, settings, base_offset, collector);
+			if (collector.HadHit())
+				hits.push_back(collector.mHit);
+		}
+		else
+		{
+			AllHitCollisionCollector<CastShapeCollector> collector;
+			mPhysicsSystem->GetNarrowPhaseQuery().CastShape(shape_cast, settings, base_offset, collector);
+			collector.Sort();
+			hits.insert(hits.end(), collector.mHits.begin(), collector.mHits.end());
+			if ((int)hits.size() > mMaxHits)
+				hits.resize(mMaxHits);
+		}
 
-			// Get shapes
-			AllHitCollisionCollector<TransformedShapeCollector> collector;
-			mPhysicsSystem->GetNarrowPhaseQuery().CollectTransformedShapes(box, collector);
+		had_hit = !hits.empty();
+		if (had_hit)
+		{
+			// Fill in results
+			ShapeCastResult& first_hit = hits.front();
+			outPosition = shape_cast.GetPointOnRay(first_hit.mFraction);
+			outFraction = first_hit.mFraction;
+			outID = first_hit.mBodyID2;
 
 			// Draw results
-			for (const TransformedShape &ts : collector.mHits)
-				mDebugRenderer->DrawWireBox(RMat44::sRotationTranslation(ts.mShapeRotation, ts.mShapePositionCOM) * Mat44::sScale(ts.GetShapeScale()), ts.mShape->GetLocalBounds(), Color::sYellow);
+			RVec3 prev_position = start;
+			bool c = false;
+			for (const ShapeCastResult& hit : hits)
+			{
+				// Draw line
+				RVec3 position = shape_cast.GetPointOnRay(hit.mFraction);
+				mDebugRenderer->DrawLine(prev_position, position, c ? Color::sGrey : Color::sWhite);
+				c = !c;
+				prev_position = position;
 
-			// Draw test location
-			mDebugRenderer->DrawWireBox(box, !collector.mHits.empty()? Color::sGreen : Color::sRed);
+				BodyLockRead lock(mPhysicsSystem->GetBodyLockInterface(), hit.mBodyID2);
+				if (lock.Succeeded())
+				{
+					const Body& hit_body = lock.GetBody();
+
+					// Draw shape
+					Color color = hit_body.IsDynamic() ? Color::sYellow : Color::sOrange;
+#ifdef JPH_DEBUG_RENDERER
+					shape_cast.mShape->Draw(mDebugRenderer, shape_cast.mCenterOfMassStart.PostTranslated(hit.mFraction * shape_cast.mDirection), Vec3::sReplicate(1.0f), color, false, false);
+#endif // JPH_DEBUG_RENDERER
+
+					// Draw normal
+					RVec3 contact_position1 = base_offset + hit.mContactPointOn1;
+					RVec3 contact_position2 = base_offset + hit.mContactPointOn2;
+					Vec3 normal = hit.mPenetrationAxis.Normalized();
+					mDebugRenderer->DrawArrow(contact_position2, contact_position2 - normal, color, 0.01f); // Flip to make it point towards the cast body
+
+					// Contact position 1
+					mDebugRenderer->DrawMarker(contact_position1, Color::sGreen, 0.1f);
+
+					// Draw perpendicular axis to indicate contact position 2
+					Vec3 perp1 = normal.GetNormalizedPerpendicular();
+					Vec3 perp2 = normal.Cross(perp1);
+					mDebugRenderer->DrawLine(contact_position2 - 0.1f * perp1, contact_position2 + 0.1f * perp1, color);
+					mDebugRenderer->DrawLine(contact_position2 - 0.1f * perp2, contact_position2 + 0.1f * perp2, color);
+
+					// Draw material
+					const PhysicsMaterial* material2 = hit_body.GetShape()->GetMaterial(hit.mSubShapeID2);
+					mDebugRenderer->DrawText3D(position, material2->GetDebugName());
+
+					// Draw faces
+					mDebugRenderer->DrawWirePolygon(RMat44::sTranslation(base_offset), hit.mShape1Face, Color::sYellow, 0.01f);
+					mDebugRenderer->DrawWirePolygon(RMat44::sTranslation(base_offset), hit.mShape2Face, Color::sRed, 0.01f);
+				}
+			}
+
+			// Draw remainder of line
+			mDebugRenderer->DrawLine(shape_cast.GetPointOnRay(hits.back().mFraction), start + direction, Color::sRed);
 		}
-		break;
+		else
+		{
+			// Draw 'miss'
+			mDebugRenderer->DrawLine(start, start + direction, Color::sRed);
+#ifdef JPH_DEBUG_RENDERER
+			shape_cast.mShape->Draw(mDebugRenderer, shape_cast.mCenterOfMassStart.PostTranslated(shape_cast.mDirection), Vec3::sReplicate(1.0f), Color::sRed, false, false);
+#endif // JPH_DEBUG_RENDERER
+		}
+	}
+	break;
+
+	case EProbeMode::TransformedShape:
+	{
+		// Create box
+		const float fraction = 0.2f;
+		RVec3 center = start + fraction * direction;
+		Vec3 half_extent = 0.5f * mShapeScale;
+		AABox box(center - half_extent, center + half_extent);
+
+		// Get shapes
+		AllHitCollisionCollector<TransformedShapeCollector> collector;
+		mPhysicsSystem->GetNarrowPhaseQuery().CollectTransformedShapes(box, collector);
+
+		// Draw results
+		for (const TransformedShape& ts : collector.mHits)
+			mDebugRenderer->DrawWireBox(RMat44::sRotationTranslation(ts.mShapeRotation, ts.mShapePositionCOM) * Mat44::sScale(ts.GetShapeScale()), ts.mShape->GetLocalBounds(), Color::sYellow);
+
+		// Draw test location
+		mDebugRenderer->DrawWireBox(box, !collector.mHits.empty() ? Color::sGreen : Color::sRed);
+	}
+	break;
 
 	case EProbeMode::GetTriangles:
+	{
+		// Create box
+		const float fraction = 0.2f;
+		RVec3 center = start + fraction * direction;
+		Vec3 half_extent = 2.0f * mShapeScale;
+		AABox box(center - half_extent, center + half_extent);
+
+		// Get shapes
+		AllHitCollisionCollector<TransformedShapeCollector> collector;
+		mPhysicsSystem->GetNarrowPhaseQuery().CollectTransformedShapes(box, collector);
+
+		// Loop over shapes
+		had_hit = false;
+		for (const TransformedShape& ts : collector.mHits)
 		{
-			// Create box
-			const float fraction = 0.2f;
-			RVec3 center = start + fraction * direction;
-			Vec3 half_extent = 2.0f * mShapeScale;
-			AABox box(center - half_extent, center + half_extent);
+			const int cMaxTriangles = 32;
+			Float3 vertices[cMaxTriangles * 3];
+			const PhysicsMaterial* materials[cMaxTriangles];
 
-			// Get shapes
-			AllHitCollisionCollector<TransformedShapeCollector> collector;
-			mPhysicsSystem->GetNarrowPhaseQuery().CollectTransformedShapes(box, collector);
-
-			// Loop over shapes
-			had_hit = false;
-			for (const TransformedShape &ts : collector.mHits)
+			// Start iterating triangles
+			Shape::GetTrianglesContext ctx;
+			ts.GetTrianglesStart(ctx, box, base_offset);
+			for (;;)
 			{
-				const int cMaxTriangles = 32;
-				Float3 vertices[cMaxTriangles * 3];
-				const PhysicsMaterial *materials[cMaxTriangles];
+				// Fetch next triangles
+				int count = ts.GetTrianglesNext(ctx, cMaxTriangles, vertices, materials);
+				if (count == 0)
+					break;
 
-				// Start iterating triangles
-				Shape::GetTrianglesContext ctx;
-				ts.GetTrianglesStart(ctx, box, base_offset);
-				for (;;)
+				// Draw triangles
+				const PhysicsMaterial** m = materials;
+				for (Float3* v = vertices, *v_end = vertices + 3 * count; v < v_end; v += 3, ++m)
 				{
-					// Fetch next triangles
-					int count = ts.GetTrianglesNext(ctx, cMaxTriangles, vertices, materials);
-					if (count == 0)
-						break;
-
-					// Draw triangles
-					const PhysicsMaterial **m = materials;
-					for (Float3 *v = vertices, *v_end = vertices + 3 * count; v < v_end; v += 3, ++m)
-					{
-						RVec3 v1 = base_offset + Vec3(v[0]), v2 = base_offset + Vec3(v[1]), v3 = base_offset + Vec3(v[2]);
-						RVec3 triangle_center = (v1 + v2 + v3) / 3.0f;
-						Vec3 triangle_normal = Vec3(v2 - v1).Cross(Vec3(v3 - v1)).Normalized();
-						mDebugRenderer->DrawWireTriangle(v1, v2, v3, (*m)->GetDebugColor());
-						mDebugRenderer->DrawArrow(triangle_center, triangle_center + triangle_normal, Color::sGreen, 0.01f);
-					}
-
-					had_hit = true;
+					RVec3 v1 = base_offset + Vec3(v[0]), v2 = base_offset + Vec3(v[1]), v3 = base_offset + Vec3(v[2]);
+					RVec3 triangle_center = (v1 + v2 + v3) / 3.0f;
+					Vec3 triangle_normal = Vec3(v2 - v1).Cross(Vec3(v3 - v1)).Normalized();
+					mDebugRenderer->DrawWireTriangle(v1, v2, v3, (*m)->GetDebugColor());
+					mDebugRenderer->DrawArrow(triangle_center, triangle_center + triangle_normal, Color::sGreen, 0.01f);
 				}
-			}
 
-			// Draw test location
-			mDebugRenderer->DrawWireBox(box, had_hit? Color::sGreen : Color::sRed);
+				had_hit = true;
+			}
 		}
-		break;
+
+		// Draw test location
+		mDebugRenderer->DrawWireBox(box, had_hit ? Color::sGreen : Color::sRed);
+	}
+	break;
 
 	case EProbeMode::BroadPhaseRay:
+	{
+		// Create ray
+		RayCast ray{ Vec3(start), direction };
+
+		// Cast ray
+		AllHitCollisionCollector<RayCastBodyCollector> collector;
+		mPhysicsSystem->GetBroadPhaseQuery().CastRay(ray, collector);
+		collector.Sort();
+
+		had_hit = !collector.mHits.empty();
+		if (had_hit)
 		{
-			// Create ray
-			RayCast ray { Vec3(start), direction };
-
-			// Cast ray
-			AllHitCollisionCollector<RayCastBodyCollector> collector;
-			mPhysicsSystem->GetBroadPhaseQuery().CastRay(ray, collector);
-			collector.Sort();
-
-			had_hit = !collector.mHits.empty();
-			if (had_hit)
+			// Draw results
+			RVec3 prev_position = start;
+			bool c = false;
+			for (const BroadPhaseCastResult& hit : collector.mHits)
 			{
-				// Draw results
-				RVec3 prev_position = start;
-				bool c = false;
-				for (const BroadPhaseCastResult &hit : collector.mHits)
+				// Draw line
+				RVec3 position = start + hit.mFraction * direction;
+				Color cast_color = c ? Color::sGrey : Color::sWhite;
+				mDebugRenderer->DrawLine(prev_position, position, cast_color);
+				mDebugRenderer->DrawMarker(position, cast_color, 0.1f);
+				c = !c;
+				prev_position = position;
+
+				BodyLockRead lock(mPhysicsSystem->GetBodyLockInterface(), hit.mBodyID);
+				if (lock.Succeeded())
 				{
-					// Draw line
-					RVec3 position = start + hit.mFraction * direction;
-					Color cast_color = c? Color::sGrey : Color::sWhite;
-					mDebugRenderer->DrawLine(prev_position, position, cast_color);
-					mDebugRenderer->DrawMarker(position, cast_color, 0.1f);
-					c = !c;
-					prev_position = position;
+					const Body& hit_body = lock.GetBody();
 
-					BodyLockRead lock(mPhysicsSystem->GetBodyLockInterface(), hit.mBodyID);
-					if (lock.Succeeded())
-					{
-						const Body &hit_body = lock.GetBody();
-
-						// Draw bounding box
-						Color color = hit_body.IsDynamic()? Color::sYellow : Color::sOrange;
-						mDebugRenderer->DrawWireBox(hit_body.GetCenterOfMassTransform(), hit_body.GetShape()->GetLocalBounds(), color);
-					}
+					// Draw bounding box
+					Color color = hit_body.IsDynamic() ? Color::sYellow : Color::sOrange;
+					mDebugRenderer->DrawWireBox(hit_body.GetCenterOfMassTransform(), hit_body.GetShape()->GetLocalBounds(), color);
 				}
+			}
 
-				// Draw remainder of line
-				mDebugRenderer->DrawLine(start + collector.mHits.back().mFraction * direction, start + direction, Color::sRed);
-			}
-			else
-			{
-				// Draw 'miss'
-				mDebugRenderer->DrawLine(start, start + direction, Color::sRed);
-				mDebugRenderer->DrawMarker(start + direction, Color::sRed, 0.1f);
-			}
+			// Draw remainder of line
+			mDebugRenderer->DrawLine(start + collector.mHits.back().mFraction * direction, start + direction, Color::sRed);
 		}
-		break;
+		else
+		{
+			// Draw 'miss'
+			mDebugRenderer->DrawLine(start, start + direction, Color::sRed);
+			mDebugRenderer->DrawMarker(start + direction, Color::sRed, 0.1f);
+		}
+	}
+	break;
 
 	case EProbeMode::BroadPhaseBox:
+	{
+		// Create box
+		const float fraction = 0.2f;
+		RVec3 center = start + fraction * direction;
+		Vec3 half_extent = 2.0f * mShapeScale;
+		AABox box(center - half_extent, center + half_extent);
+
+		// Collide box
+		AllHitCollisionCollector<CollideShapeBodyCollector> collector;
+		mPhysicsSystem->GetBroadPhaseQuery().CollideAABox(box, collector);
+
+		had_hit = !collector.mHits.empty();
+		if (had_hit)
 		{
-			// Create box
-			const float fraction = 0.2f;
-			RVec3 center = start + fraction * direction;
-			Vec3 half_extent = 2.0f * mShapeScale;
-			AABox box(center - half_extent, center + half_extent);
-
-			// Collide box
-			AllHitCollisionCollector<CollideShapeBodyCollector> collector;
-			mPhysicsSystem->GetBroadPhaseQuery().CollideAABox(box, collector);
-
-			had_hit = !collector.mHits.empty();
-			if (had_hit)
+			// Draw results
+			for (const BodyID& hit : collector.mHits)
 			{
-				// Draw results
-				for (const BodyID &hit : collector.mHits)
+				BodyLockRead lock(mPhysicsSystem->GetBodyLockInterface(), hit);
+				if (lock.Succeeded())
 				{
-					BodyLockRead lock(mPhysicsSystem->GetBodyLockInterface(), hit);
-					if (lock.Succeeded())
-					{
-						const Body &hit_body = lock.GetBody();
+					const Body& hit_body = lock.GetBody();
 
-						// Draw bounding box
-						Color color = hit_body.IsDynamic()? Color::sYellow : Color::sOrange;
-						mDebugRenderer->DrawWireBox(hit_body.GetCenterOfMassTransform(), hit_body.GetShape()->GetLocalBounds(), color);
-					}
+					// Draw bounding box
+					Color color = hit_body.IsDynamic() ? Color::sYellow : Color::sOrange;
+					mDebugRenderer->DrawWireBox(hit_body.GetCenterOfMassTransform(), hit_body.GetShape()->GetLocalBounds(), color);
 				}
 			}
-
-			// Draw test location
-			mDebugRenderer->DrawWireBox(box, had_hit? Color::sGreen : Color::sRed);
 		}
-		break;
+
+		// Draw test location
+		mDebugRenderer->DrawWireBox(box, had_hit ? Color::sGreen : Color::sRed);
+	}
+	break;
 
 	case EProbeMode::BroadPhaseSphere:
+	{
+		// Create sphere
+		const float fraction = 0.2f;
+		const float radius = mShapeScale.Length() * 2.0f;
+		Vec3 point(start + fraction * direction);
+
+		// Collide sphere
+		AllHitCollisionCollector<CollideShapeBodyCollector> collector;
+		mPhysicsSystem->GetBroadPhaseQuery().CollideSphere(point, radius, collector);
+
+		had_hit = !collector.mHits.empty();
+		if (had_hit)
 		{
-			// Create sphere
-			const float fraction = 0.2f;
-			const float radius = mShapeScale.Length() * 2.0f;
-			Vec3 point(start + fraction * direction);
-
-			// Collide sphere
-			AllHitCollisionCollector<CollideShapeBodyCollector> collector;
-			mPhysicsSystem->GetBroadPhaseQuery().CollideSphere(point, radius, collector);
-
-			had_hit = !collector.mHits.empty();
-			if (had_hit)
+			// Draw results
+			for (const BodyID& hit : collector.mHits)
 			{
-				// Draw results
-				for (const BodyID &hit : collector.mHits)
+				BodyLockRead lock(mPhysicsSystem->GetBodyLockInterface(), hit);
+				if (lock.Succeeded())
 				{
-					BodyLockRead lock(mPhysicsSystem->GetBodyLockInterface(), hit);
-					if (lock.Succeeded())
-					{
-						const Body &hit_body = lock.GetBody();
+					const Body& hit_body = lock.GetBody();
 
-						// Draw bounding box
-						Color color = hit_body.IsDynamic()? Color::sYellow : Color::sOrange;
-						mDebugRenderer->DrawWireBox(hit_body.GetCenterOfMassTransform(), hit_body.GetShape()->GetLocalBounds(), color);
-					}
+					// Draw bounding box
+					Color color = hit_body.IsDynamic() ? Color::sYellow : Color::sOrange;
+					mDebugRenderer->DrawWireBox(hit_body.GetCenterOfMassTransform(), hit_body.GetShape()->GetLocalBounds(), color);
 				}
 			}
-
-			// Draw test location
-			mDebugRenderer->DrawWireSphere(RVec3(point), radius, had_hit? Color::sGreen : Color::sRed);
 		}
-		break;
+
+		// Draw test location
+		mDebugRenderer->DrawWireSphere(RVec3(point), radius, had_hit ? Color::sGreen : Color::sRed);
+	}
+	break;
 
 	case EProbeMode::BroadPhasePoint:
+	{
+		// Create point
+		const float fraction = 0.1f;
+		Vec3 point(start + fraction * direction);
+
+		// Collide point
+		AllHitCollisionCollector<CollideShapeBodyCollector> collector;
+		mPhysicsSystem->GetBroadPhaseQuery().CollidePoint(point, collector);
+
+		had_hit = !collector.mHits.empty();
+		if (had_hit)
 		{
-			// Create point
-			const float fraction = 0.1f;
-			Vec3 point(start + fraction * direction);
-
-			// Collide point
-			AllHitCollisionCollector<CollideShapeBodyCollector> collector;
-			mPhysicsSystem->GetBroadPhaseQuery().CollidePoint(point, collector);
-
-			had_hit = !collector.mHits.empty();
-			if (had_hit)
+			// Draw results
+			for (const BodyID& hit : collector.mHits)
 			{
-				// Draw results
-				for (const BodyID &hit : collector.mHits)
+				BodyLockRead lock(mPhysicsSystem->GetBodyLockInterface(), hit);
+				if (lock.Succeeded())
 				{
-					BodyLockRead lock(mPhysicsSystem->GetBodyLockInterface(), hit);
-					if (lock.Succeeded())
-					{
-						const Body &hit_body = lock.GetBody();
+					const Body& hit_body = lock.GetBody();
 
-						// Draw bounding box
-						Color color = hit_body.IsDynamic()? Color::sYellow : Color::sOrange;
-						mDebugRenderer->DrawWireBox(hit_body.GetCenterOfMassTransform(), hit_body.GetShape()->GetLocalBounds(), color);
-					}
+					// Draw bounding box
+					Color color = hit_body.IsDynamic() ? Color::sYellow : Color::sOrange;
+					mDebugRenderer->DrawWireBox(hit_body.GetCenterOfMassTransform(), hit_body.GetShape()->GetLocalBounds(), color);
 				}
 			}
-
-			// Draw test location
-			mDebugRenderer->DrawMarker(RVec3(point), had_hit? Color::sGreen : Color::sRed, 0.1f);
 		}
-		break;
+
+		// Draw test location
+		mDebugRenderer->DrawMarker(RVec3(point), had_hit ? Color::sGreen : Color::sRed, 0.1f);
+	}
+	break;
 
 	case EProbeMode::BroadPhaseOrientedBox:
+	{
+		// Create box
+		const float fraction = 0.2f;
+		Vec3 center(start + fraction * direction);
+		Vec3 half_extent = 2.0f * mShapeScale;
+		OrientedBox box(Mat44::sRotationTranslation(Quat::sRotation(Vec3::sAxisZ(), 0.2f * JPH_PI) * Quat::sRotation(Vec3::sAxisX(), 0.1f * JPH_PI), center), half_extent);
+
+		// Collide box
+		AllHitCollisionCollector<CollideShapeBodyCollector> collector;
+		mPhysicsSystem->GetBroadPhaseQuery().CollideOrientedBox(box, collector);
+
+		had_hit = !collector.mHits.empty();
+		if (had_hit)
 		{
-			// Create box
-			const float fraction = 0.2f;
-			Vec3 center(start + fraction * direction);
-			Vec3 half_extent = 2.0f * mShapeScale;
-			OrientedBox box(Mat44::sRotationTranslation(Quat::sRotation(Vec3::sAxisZ(), 0.2f * JPH_PI) * Quat::sRotation(Vec3::sAxisX(), 0.1f * JPH_PI), center), half_extent);
-
-			// Collide box
-			AllHitCollisionCollector<CollideShapeBodyCollector> collector;
-			mPhysicsSystem->GetBroadPhaseQuery().CollideOrientedBox(box, collector);
-
-			had_hit = !collector.mHits.empty();
-			if (had_hit)
+			// Draw results
+			for (const BodyID& hit : collector.mHits)
 			{
-				// Draw results
-				for (const BodyID &hit : collector.mHits)
+				BodyLockRead lock(mPhysicsSystem->GetBodyLockInterface(), hit);
+				if (lock.Succeeded())
 				{
-					BodyLockRead lock(mPhysicsSystem->GetBodyLockInterface(), hit);
-					if (lock.Succeeded())
-					{
-						const Body &hit_body = lock.GetBody();
+					const Body& hit_body = lock.GetBody();
 
-						// Draw bounding box
-						Color color = hit_body.IsDynamic()? Color::sYellow : Color::sOrange;
-						mDebugRenderer->DrawWireBox(hit_body.GetCenterOfMassTransform(), hit_body.GetShape()->GetLocalBounds(), color);
-					}
+					// Draw bounding box
+					Color color = hit_body.IsDynamic() ? Color::sYellow : Color::sOrange;
+					mDebugRenderer->DrawWireBox(hit_body.GetCenterOfMassTransform(), hit_body.GetShape()->GetLocalBounds(), color);
 				}
 			}
-
-			// Draw test location
-			mDebugRenderer->DrawWireBox(box, had_hit? Color::sGreen : Color::sRed);
 		}
-		break;
+
+		// Draw test location
+		mDebugRenderer->DrawWireBox(box, had_hit ? Color::sGreen : Color::sRed);
+	}
+	break;
 
 	case EProbeMode::BroadPhaseCastBox:
+	{
+		// Create box
+		Vec3 half_extent = 2.0f * mShapeScale;
+		AABox box(start - half_extent, start + half_extent);
+		AABoxCast box_cast{ box, direction };
+
+		// Cast box
+		AllHitCollisionCollector<CastShapeBodyCollector> collector;
+		mPhysicsSystem->GetBroadPhaseQuery().CastAABox(box_cast, collector);
+		collector.Sort();
+
+		had_hit = !collector.mHits.empty();
+		if (had_hit)
 		{
-			// Create box
-			Vec3 half_extent = 2.0f * mShapeScale;
-			AABox box(start - half_extent, start + half_extent);
-			AABoxCast box_cast { box, direction };
-
-			// Cast box
-			AllHitCollisionCollector<CastShapeBodyCollector> collector;
-			mPhysicsSystem->GetBroadPhaseQuery().CastAABox(box_cast, collector);
-			collector.Sort();
-
-			had_hit = !collector.mHits.empty();
-			if (had_hit)
+			// Draw results
+			RVec3 prev_position = start;
+			bool c = false;
+			for (const BroadPhaseCastResult& hit : collector.mHits)
 			{
-				// Draw results
-				RVec3 prev_position = start;
-				bool c = false;
-				for (const BroadPhaseCastResult &hit : collector.mHits)
+				// Draw line
+				RVec3 position = start + hit.mFraction * direction;
+				Color cast_color = c ? Color::sGrey : Color::sWhite;
+				mDebugRenderer->DrawLine(prev_position, position, cast_color);
+				mDebugRenderer->DrawWireBox(RMat44::sTranslation(position), AABox(-half_extent, half_extent), cast_color);
+				c = !c;
+				prev_position = position;
+
+				BodyLockRead lock(mPhysicsSystem->GetBodyLockInterface(), hit.mBodyID);
+				if (lock.Succeeded())
 				{
-					// Draw line
-					RVec3 position = start + hit.mFraction * direction;
-					Color cast_color = c? Color::sGrey : Color::sWhite;
-					mDebugRenderer->DrawLine(prev_position, position, cast_color);
-					mDebugRenderer->DrawWireBox(RMat44::sTranslation(position), AABox(-half_extent, half_extent), cast_color);
-					c = !c;
-					prev_position = position;
+					const Body& hit_body = lock.GetBody();
 
-					BodyLockRead lock(mPhysicsSystem->GetBodyLockInterface(), hit.mBodyID);
-					if (lock.Succeeded())
-					{
-						const Body &hit_body = lock.GetBody();
-
-						// Draw bounding box
-						Color color = hit_body.IsDynamic()? Color::sYellow : Color::sOrange;
-						mDebugRenderer->DrawWireBox(hit_body.GetCenterOfMassTransform(), hit_body.GetShape()->GetLocalBounds(), color);
-					}
+					// Draw bounding box
+					Color color = hit_body.IsDynamic() ? Color::sYellow : Color::sOrange;
+					mDebugRenderer->DrawWireBox(hit_body.GetCenterOfMassTransform(), hit_body.GetShape()->GetLocalBounds(), color);
 				}
+			}
 
-				// Draw remainder of line
-				mDebugRenderer->DrawLine(start + collector.mHits.back().mFraction * direction, start + direction, Color::sRed);
-			}
-			else
-			{
-				// Draw 'miss'
-				mDebugRenderer->DrawLine(start, start + direction, Color::sRed);
-				mDebugRenderer->DrawWireBox(RMat44::sTranslation(start + direction), AABox(-half_extent, half_extent), Color::sRed);
-			}
+			// Draw remainder of line
+			mDebugRenderer->DrawLine(start + collector.mHits.back().mFraction * direction, start + direction, Color::sRed);
 		}
-		break;
+		else
+		{
+			// Draw 'miss'
+			mDebugRenderer->DrawLine(start, start + direction, Color::sRed);
+			mDebugRenderer->DrawWireBox(RMat44::sTranslation(start + direction), AABox(-half_extent, half_extent), Color::sRed);
+		}
+	}
+	break;
 	}
 
 	return had_hit;
@@ -1642,8 +1644,8 @@ void SamplesApp::UpdateDebug()
 
 	const float cDragRayLength = 40.0f;
 
-	BodyInterface &bi = mPhysicsSystem->GetBodyInterface();
-			
+	BodyInterface& bi = mPhysicsSystem->GetBodyInterface();
+
 	// Handle keyboard input for which simulation needs to be running
 	for (int key = mKeyboard->GetFirstKey(); key != 0; key = mKeyboard->GetNextKey())
 		switch (key)
@@ -1668,7 +1670,7 @@ void SamplesApp::UpdateDebug()
 				BodyLockWrite lock(mPhysicsSystem->GetBodyLockInterface(), mDragBody);
 				if (lock.Succeeded())
 				{
-					Body &drag_body = lock.GetBody();
+					Body& drag_body = lock.GetBody();
 					if (drag_body.IsDynamic())
 					{
 						// Create constraint to drag body
@@ -1680,7 +1682,7 @@ void SamplesApp::UpdateDebug()
 						// Construct fixed body for the mouse constraint
 						// Note that we don't add it to the world since we don't want anything to collide with it, we just
 						// need an anchor for a constraint
-						Body *drag_anchor = bi.CreateBody(BodyCreationSettings(new SphereShape(0.01f), hit_position, Quat::sIdentity(), EMotionType::Static, Layers::NON_MOVING));
+						Body* drag_anchor = bi.CreateBody(BodyCreationSettings(new SphereShape(0.01f), hit_position, Quat::sIdentity(), EMotionType::Static, Layers::NON_MOVING));
 						mDragAnchor = drag_anchor;
 
 						// Construct constraint that connects the drag anchor with the body that we want to drag
@@ -1724,7 +1726,7 @@ bool SamplesApp::RenderFrame(float inDeltaTime)
 {
 	// Reinitialize the job system if the concurrency setting changed
 	if (mMaxConcurrentJobs != mJobSystem->GetMaxConcurrency())
-		static_cast<JobSystemThreadPool *>(mJobSystem)->SetNumThreads(mMaxConcurrentJobs - 1);
+		static_cast<JobSystemThreadPool*>(mJobSystem)->SetNumThreads(mMaxConcurrentJobs - 1);
 
 	// Restart the test if the test requests this
 	if (mTest->NeedsRestart())
@@ -1735,7 +1737,7 @@ bool SamplesApp::RenderFrame(float inDeltaTime)
 
 	// Get the status string
 	mStatusString = mTest->GetStatusString();
-		
+
 	// Select the next test if automatic testing times out
 	if (!CheckNextTest())
 		return false;
@@ -1757,7 +1759,7 @@ bool SamplesApp::RenderFrame(float inDeltaTime)
 				NextTest();
 			break;
 
-	#ifdef JPH_DEBUG_RENDERER
+#ifdef JPH_DEBUG_RENDERER
 		case DIK_H:
 			if (shift)
 				mBodyDrawSettings.mDrawGetSupportFunction = !mBodyDrawSettings.mDrawGetSupportFunction;
@@ -1787,7 +1789,7 @@ bool SamplesApp::RenderFrame(float inDeltaTime)
 		case DIK_3:
 			ContactConstraintManager::sDrawContactPointReduction = !ContactConstraintManager::sDrawContactPointReduction;
 			break;
-				
+
 		case DIK_C:
 			mDrawConstraints = !mDrawConstraints;
 			break;
@@ -1804,7 +1806,7 @@ bool SamplesApp::RenderFrame(float inDeltaTime)
 			if (alt)
 				mBodyDrawSettings.mDrawShapeWireframe = !mBodyDrawSettings.mDrawShapeWireframe;
 			break;
-	#endif // JPH_DEBUG_RENDERER
+#endif // JPH_DEBUG_RENDERER
 
 		case DIK_COMMA:
 			// Back stepping
@@ -1815,7 +1817,7 @@ bool SamplesApp::RenderFrame(float inDeltaTime)
 					JPH_ASSERT(mCurrentPlaybackFrame == -1);
 					mCurrentPlaybackFrame = (int)mPlaybackFrames.size() - 1;
 				}
-				mPlaybackMode = shift? EPlaybackMode::Rewind : EPlaybackMode::StepBack;
+				mPlaybackMode = shift ? EPlaybackMode::Rewind : EPlaybackMode::StepBack;
 			}
 			break;
 
@@ -1824,7 +1826,7 @@ bool SamplesApp::RenderFrame(float inDeltaTime)
 			if (mPlaybackMode != EPlaybackMode::Play)
 			{
 				JPH_ASSERT(mCurrentPlaybackFrame >= 0);
-				mPlaybackMode = shift? EPlaybackMode::FastForward : EPlaybackMode::StepForward;
+				mPlaybackMode = shift ? EPlaybackMode::FastForward : EPlaybackMode::StepForward;
 			}
 			break;
 		}
@@ -1895,9 +1897,9 @@ bool SamplesApp::RenderFrame(float inDeltaTime)
 			ClearDebugRenderer();
 
 			// Restore state to what it was during that time
-			StateRecorderImpl &recorder = mPlaybackFrames[mCurrentPlaybackFrame];
+			StateRecorderImpl& recorder = mPlaybackFrames[mCurrentPlaybackFrame];
 			RestoreState(recorder);
-				
+
 			// Physics world is drawn using debug lines, when not paused
 			// Draw state prior to step so that debug lines are created from the same state
 			// (the constraints are solved on the current state and then the world is stepped)
@@ -1906,11 +1908,11 @@ bool SamplesApp::RenderFrame(float inDeltaTime)
 			// Step the world (with fixed frequency)
 			StepPhysics(mJobSystem);
 
-		#ifdef JPH_DEBUG_RENDERER
+#ifdef JPH_DEBUG_RENDERER
 			// Draw any contacts that were collected through the contact listener
 			if (mContactListener)
 				mContactListener->DrawState();
-		#endif // JPH_DEBUG_RENDERER
+#endif // JPH_DEBUG_RENDERER
 
 			// Validate that update result is the same as the previously recorded state
 			if (check_determinism && mCurrentPlaybackFrame < (int)mPlaybackFrames.size() - 1)
@@ -1928,7 +1930,7 @@ bool SamplesApp::RenderFrame(float inDeltaTime)
 		if (mCurrentPlaybackFrame == 0)
 			mPlaybackMode = EPlaybackMode::Stop;
 	}
-	else 
+	else
 	{
 		// Normal update
 		JPH_ASSERT(mCurrentPlaybackFrame == -1);
@@ -1953,11 +1955,11 @@ bool SamplesApp::RenderFrame(float inDeltaTime)
 			// Update the physics world
 			StepPhysics(mJobSystem);
 
-		#ifdef JPH_DEBUG_RENDERER
+#ifdef JPH_DEBUG_RENDERER
 			// Draw any contacts that were collected through the contact listener
 			if (mContactListener)
 				mContactListener->DrawState();
-		#endif // JPH_DEBUG_RENDERER
+#endif // JPH_DEBUG_RENDERER
 
 			if (check_determinism)
 			{
@@ -2007,7 +2009,7 @@ void SamplesApp::DrawPhysics()
 		// Iterate through all active bodies
 		BodyIDVector bodies;
 		mPhysicsSystem->GetBodies(bodies);
-		const BodyLockInterface &bli = mPhysicsSystem->GetBodyLockInterface();
+		const BodyLockInterface& bli = mPhysicsSystem->GetBodyLockInterface();
 		for (BodyID b : bodies)
 		{
 			// Get the body
@@ -2015,12 +2017,12 @@ void SamplesApp::DrawPhysics()
 			if (lock.SucceededAndIsInBroadPhase())
 			{
 				// Collect all leaf shapes for the body and their transforms
-				const Body &body = lock.GetBody();
+				const Body& body = lock.GetBody();
 				AllHitCollisionCollector<TransformedShapeCollector> collector;
 				body.GetTransformedShape().CollectTransformedShapes(body.GetWorldSpaceBounds(), collector);
 
 				// Draw all leaf shapes
-				for (const TransformedShape &transformed_shape : collector.mHits)
+				for (const TransformedShape& transformed_shape : collector.mHits)
 				{
 					DebugRenderer::GeometryRef geometry;
 
@@ -2044,7 +2046,7 @@ void SamplesApp::DrawPhysics()
 
 						// Start iterating all triangles of the shape
 						Shape::GetTrianglesContext context;
-						transformed_shape.mShape->GetTrianglesStart(context, AABox::sBiggest(), Vec3::sZero(), Quat::sIdentity(), Vec3::sReplicate(1.0f));						
+						transformed_shape.mShape->GetTrianglesStart(context, AABox::sBiggest(), Vec3::sZero(), Quat::sIdentity(), Vec3::sReplicate(1.0f));
 						for (;;)
 						{
 							// Get the next batch of vertices
@@ -2057,7 +2059,7 @@ void SamplesApp::DrawPhysics()
 							// Allocate space for triangles
 							size_t output_index = triangles.size();
 							triangles.resize(triangles.size() + triangle_count);
-							DebugRenderer::Triangle *triangle = &triangles[output_index];
+							DebugRenderer::Triangle* triangle = &triangles[output_index];
 
 							// Convert to a renderable triangle
 							for (int vertex = 0, vertex_max = 3 * triangle_count; vertex < vertex_max; vertex += 3, ++triangle)
@@ -2121,7 +2123,7 @@ void SamplesApp::DrawPhysics()
 					Vec3 scale = transformed_shape.GetShapeScale();
 					bool inside_out = ScaleHelpers::IsInsideOut(scale);
 					RMat44 matrix = transformed_shape.GetCenterOfMassTransform().PreScaled(scale);
-					mDebugRenderer->DrawGeometry(matrix, color, geometry, inside_out? DebugRenderer::ECullMode::CullFrontFace : DebugRenderer::ECullMode::CullBackFace, DebugRenderer::ECastShadow::On, body.IsSensor()? DebugRenderer::EDrawMode::Wireframe : DebugRenderer::EDrawMode::Solid);
+					mDebugRenderer->DrawGeometry(matrix, color, geometry, inside_out ? DebugRenderer::ECullMode::CullFrontFace : DebugRenderer::ECullMode::CullBackFace, DebugRenderer::ECastShadow::On, body.IsSensor() ? DebugRenderer::EDrawMode::Wireframe : DebugRenderer::EDrawMode::Solid);
 				}
 			}
 		}
@@ -2131,7 +2133,7 @@ void SamplesApp::DrawPhysics()
 	mShapeToGeometry = std::move(shape_to_geometry);
 }
 
-void SamplesApp::StepPhysics(JobSystem *inJobSystem)
+void SamplesApp::StepPhysics(JobSystem* inJobSystem)
 {
 	float delta_time = 1.0f / mUpdateFrequency;
 
@@ -2142,9 +2144,9 @@ void SamplesApp::StepPhysics(JobSystem *inJobSystem)
 		pre_update.mDeltaTime = delta_time;
 		pre_update.mKeyboard = mKeyboard;
 		pre_update.mCameraState = GetCamera();
-	#ifdef JPH_DEBUG_RENDERER
+#ifdef JPH_DEBUG_RENDERER
 		pre_update.mPoseDrawSettings = &mPoseDrawSettings;
-	#endif // JPH_DEBUG_RENDERER
+#endif // JPH_DEBUG_RENDERER
 		mTest->PrePhysicsUpdate(pre_update);
 	}
 
@@ -2154,7 +2156,7 @@ void SamplesApp::StepPhysics(JobSystem *inJobSystem)
 	// Step the world (with fixed frequency)
 	mPhysicsSystem->Update(delta_time, mCollisionSteps, mIntegrationSubSteps, mTempAllocator, inJobSystem);
 #ifndef JPH_DISABLE_TEMP_ALLOCATOR
-	JPH_ASSERT(static_cast<TempAllocatorImpl *>(mTempAllocator)->IsEmpty());
+	JPH_ASSERT(static_cast<TempAllocatorImpl*>(mTempAllocator)->IsEmpty());
 #endif // JPH_DISABLE_TEMP_ALLOCATOR
 
 	// Accumulate time
@@ -2187,7 +2189,7 @@ void SamplesApp::StepPhysics(JobSystem *inJobSystem)
 	}
 }
 
-void SamplesApp::SaveState(StateRecorderImpl &inStream)
+void SamplesApp::SaveState(StateRecorderImpl& inStream)
 {
 	mTest->SaveState(inStream);
 
@@ -2197,7 +2199,7 @@ void SamplesApp::SaveState(StateRecorderImpl &inStream)
 	mPhysicsSystem->SaveState(inStream);
 }
 
-void SamplesApp::RestoreState(StateRecorderImpl &inStream)
+void SamplesApp::RestoreState(StateRecorderImpl& inStream)
 {
 	inStream.Rewind();
 
@@ -2214,7 +2216,7 @@ void SamplesApp::RestoreState(StateRecorderImpl &inStream)
 		FatalError("Failed to restore physics state");
 }
 
-void SamplesApp::ValidateState(StateRecorderImpl &inExpectedState)
+void SamplesApp::ValidateState(StateRecorderImpl& inExpectedState)
 {
 	// Save state
 	StateRecorderImpl current_state;
@@ -2234,7 +2236,7 @@ void SamplesApp::ValidateState(StateRecorderImpl &inExpectedState)
 	}
 }
 
-void SamplesApp::GetInitialCamera(CameraState &ioState) const
+void SamplesApp::GetInitialCamera(CameraState& ioState) const
 {
 	// Default if the test doesn't override it
 	ioState.mPos = GetWorldScale() * RVec3(30, 10, 30);
@@ -2245,13 +2247,13 @@ void SamplesApp::GetInitialCamera(CameraState &ioState) const
 }
 
 RMat44 SamplesApp::GetCameraPivot(float inCameraHeading, float inCameraPitch) const
-{ 
-	return mTest->GetCameraPivot(inCameraHeading, inCameraPitch); 
+{
+	return mTest->GetCameraPivot(inCameraHeading, inCameraPitch);
 }
 
 float SamplesApp::GetWorldScale() const
-{ 
-	return mTest != nullptr? mTest->GetWorldScale() : 1.0f; 
+{
+	return mTest != nullptr ? mTest->GetWorldScale() : 1.0f;
 }
 
 ENTRY_POINT(SamplesApp, RegisterCustomMemoryHook)
